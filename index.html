@@ -728,7 +728,7 @@ var _sheetCache = {}, _cacheTime = {}, CACHE_TTL = 30000;
 async function sheetsProxy(action, params) {
   var isHosted = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
   if (!isHosted) {
-    if (action !== 'read') throw new Error('Write operations require the hosted Netlify URL.');
+    if (action !== 'read') throw new Error('Write operations require the hosted URL.');
     var url = 'https://sheets.googleapis.com/v4/spreadsheets/'+C.sheet+'/values/'+encodeURIComponent(params.sheet)+'?key='+C.google;
     var res = await fetch(url);
     if (!res.ok) return null;
@@ -737,8 +737,12 @@ async function sheetsProxy(action, params) {
   var qs = (action === 'read' && params.sheet) ? '?sheet='+encodeURIComponent(params.sheet) : '';
   if (action === 'read') {
     var res2 = await fetch('/api/sheets-proxy'+qs);
-    if (!res2.ok) return null;
-    return await res2.json();
+    var d2 = await res2.json().catch(function(){ return null; });
+    if (!d2) return null;
+    if (d2.values) return d2;  // success — has values
+    // log the exact error for debugging
+    console.warn('[sheetsProxy] read failed:', JSON.stringify(d2).substring(0,200));
+    return null;
   }
   var res3 = await fetch('/api/sheets-proxy', {
     method: 'POST', headers: {'Content-Type':'application/json'},
@@ -777,12 +781,16 @@ async function tryFetch(name) {
       // Try service account proxy first
       try {
         var d = await sheetsProxy('read',{sheet:name});
-        if (d && d.values) rows = d.values;
-      } catch(e1) {}
-      // Fall back to API key if proxy fails (e.g. SA not yet configured)
+        if (d && d.values) { rows = d.values; console.log('[tryFetch SA/API OK]',name,rows.length); }
+        else console.warn('[tryFetch proxy null]',name);
+      } catch(e1) { console.warn('[tryFetch proxy err]',name,e1.message); }
+      // Fall back to direct API key (browser-side, works if sheet is public/Viewer)
       if (!rows && C.google) {
-        var r2 = await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+C.sheet+'/values/'+encodeURIComponent(name)+'?key='+C.google);
-        if (r2.ok) { var d2=await r2.json(); if(d2.values) rows=d2.values; }
+        try {
+          var r2 = await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+C.sheet+'/values/'+encodeURIComponent(name)+'?key='+C.google);
+          if (r2.ok) { var d2b=await r2.json(); if(d2b.values){ rows=d2b.values; console.log('[tryFetch APIkey OK]',name,rows.length); } }
+          else { var eb=await r2.json().catch(function(){return{};}); console.warn('[tryFetch APIkey FAIL]',name,r2.status,eb?.error?.message); }
+        } catch(e2){ console.warn('[tryFetch APIkey ERR]',name,e2.message); }
       }
     } else {
       var r3 = await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+C.sheet+'/values/'+encodeURIComponent(name)+'?key='+C.google);
@@ -800,7 +808,8 @@ async function readSheet(name) {
     // Give a helpful message depending on likely cause
     var isHosted = window.location.protocol==='https:'||window.location.hostname==='localhost';
     if (isHosted) {
-      throw new Error('Could not read "'+name+'" — either the tab does not exist in your Google Sheet, or the sheet is not shared with the service account. Check: share your sheet with bnb-it-sheets@blissful-racer-490505-d2.iam.gserviceaccount.com as Editor.');
+      console.error('[readSheet FAIL]',name,'— tried aliases:',names);
+      throw new Error('Could not read "'+name+'" — tab not found or proxy error. Check browser Console (F12) for details. Ensure sheet is shared with bnb-it-sheets@blissful-racer-490505-d2.iam.gserviceaccount.com as Editor.');
     } else {
       throw new Error('Could not read "'+name+'" — make sure the Google Sheet is shared publicly as Viewer (or add your SA key to Netlify env vars).');
     }
