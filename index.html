@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>IT Asset Assistant — Bennet &amp; Bernard</title>
+<script>
+(function(){
+  var t=localStorage.getItem('bnb_theme')||'dark';
+  document.documentElement.style.colorScheme=t;
+  document.documentElement.className='theme-'+t;
+})();
+</script>
+<style>
+:root{--bg:#0f1117;--sur:#181c26;--sur2:#1e2330;--bdr:#2a2f3d;--acc:#4f8cff;--acc2:#38d9a9;--dan:#ff6b6b;--wrn:#ffd166;--txt:#e8eaf0;--txt2:#8890a4;--txt3:#4a5068;--r:12px;--mono:monospace;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+#loginOverlay{position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-box{background:var(--sur);border:1px solid var(--bdr);border-radius:16px;padding:36px 32px;width:100%;max-width:380px;text-align:center}
+.login-logo{width:52px;height:52px;background:var(--acc);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.login-logo svg{width:26px;height:26px;stroke:#fff;fill:none;stroke-width:2}
+.login-title{font-size:20px;font-weight:700;margin-bottom:4px}
+.login-sub{font-size:13px;color:var(--txt2);margin-bottom:20px;width:100%}
+.login-input{width:100%;background:var(--sur2);border:1px solid var(--bdr);border-radius:10px;padding:12px 16px;color:var(--txt);font-size:18px;outline:none;text-align:center;letter-spacing:6px;font-family:var(--mono);margin-bottom:12px;transition:border-color .15s}
+.login-input:focus{border-color:var(--acc)}
+.login-btn{width:100%;background:var(--acc);color:#fff;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:600;cursor:pointer;transition:all .15s}
+.login-btn:hover{background:#3a7aee}
+.login-err{color:var(--dan);font-size:13px;margin-top:10px;min-height:20px;font-family:var(--mono)}
+.login-hint{font-size:11px;color:var(--txt3);margin-top:16px;font-family:var(--mono)}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--bdr);background:var(--sur);flex-shrink:0}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:30px;height:30px;background:var(--acc);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-icon svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2}
+.logo-text{font-size:14px;font-weight:600}
+.logo-sub{font-size:10px;color:var(--txt2);font-family:var(--mono)}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.status-pill{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;border:1px solid var(--bdr);font-size:10px;font-family:var(--mono);color:var(--txt2)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--acc2);box-shadow:0 0 5px var(--acc2);animation:glow 2s ease-in-out infinite;flex-shrink:0}
+@keyframes glow{0%,100%{opacity:1}50%{opacity:.4}}
+.logout-btn{padding:4px 10px;border-radius:8px;font-size:11px;font-family:var(--mono);background:transparent;border:1px solid var(--bdr);color:var(--txt3);cursor:pointer;transition:all .15s}
+.logout-btn:hover{border-color:var(--dan);color:var(--dan)}
+#alertsBar{padding:7px 20px;display:none;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--bdr);background:var(--sur)}
+.alert-chip{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:11px;font-family:var(--mono);cursor:pointer;transition:all .15s}
+.alert-chip.warn{background:rgba(255,209,102,.1);border:1px solid rgba(255,209,102,.3);color:var(--wrn)}
+.alert-chip.danger{background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.3);color:var(--dan)}
+.toolbar{display:flex;align-items:center;gap:6px;padding:8px 20px;border-bottom:1px solid var(--bdr);background:var(--sur);flex-wrap:wrap;flex-shrink:0}
+.tlabel{font-size:10px;color:var(--txt3);font-family:var(--mono);white-space:nowrap}
+.qbtn{padding:4px 11px;border-radius:20px;font-size:11px;font-family:var(--mono);background:var(--sur2);border:1px solid var(--bdr);color:var(--txt2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.qbtn:hover{border-color:var(--acc);color:var(--acc);background:rgba(79,140,255,.08)}
+.chat{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+.chat::-webkit-scrollbar{width:3px}
+.chat::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:2px}
+.msg{display:flex;gap:10px;animation:fadeup .2s ease}
+.msg.user{flex-direction:row-reverse}
+.msg.user .bbl{background:var(--acc);color:#fff;border-radius:var(--r) 4px var(--r) var(--r)}
+.msg.bot .bbl{background:var(--sur2);border-radius:4px var(--r) var(--r) var(--r)}
+@keyframes fadeup{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.msg.user{flex-direction:row-reverse;align-self:flex-end;max-width:80%}
+.msg.bot{align-self:flex-start;max-width:88%}
+.msg.sys{align-self:center}
+.av{width:30px;height:30px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.av.b{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff}
+.av.u{background:var(--sur2);border:1px solid var(--bdr);color:var(--txt2)}
+.bbl{padding:10px 14px;border-radius:var(--r);font-size:13px;line-height:1.65;max-width:78%;word-break:break-word}
+.msg.user .bbl{background:var(--acc);color:#fff;border-bottom-right-radius:4px}
+.msg.bot .bbl{background:var(--sur);border:1px solid var(--bdr);color:var(--txt);border-bottom-left-radius:4px;white-space:pre-wrap}
+.msg.sys .bbl{background:transparent;border:1px solid var(--bdr);color:var(--txt3);font-family:var(--mono);font-size:10px;padding:4px 12px;border-radius:20px}
+.msg.bot .bbl.err{border-color:var(--dan);color:var(--dan)}
+.badge{display:inline-block;padding:2px 7px;border-radius:5px;font-size:9px;font-family:var(--mono);font-weight:600;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.b-search{background:rgba(79,140,255,.15);color:var(--acc)}
+.b-count{background:rgba(56,217,169,.15);color:var(--acc2)}
+.b-pending_maintenance,.b-maintenance_compare{background:rgba(255,107,107,.15);color:var(--dan)}
+.b-add_ticket{background:rgba(255,209,102,.15);color:var(--wrn)}
+.b-report,.b-management_query{background:rgba(138,99,255,.15);color:#a78bfa}
+.b-spare,.b-antivirus{background:rgba(56,217,169,.12);color:var(--acc2)}
+.b-error{background:rgba(255,107,107,.15);color:var(--dan)}
+.rc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin-top:4px}
+.rc-card{background:var(--sur2);border:0.5px solid var(--bdr);border-radius:var(--r);padding:10px 12px}
+.rc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.rc-id{font-size:10px;font-family:monospace;color:var(--txt3)}
+.rc-name{font-size:12px;font-weight:500;color:var(--txt);margin-bottom:3px}
+.rc-sub{font-size:11px;color:var(--txt2)}
+.rc-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.rc-tag{font-size:10px;padding:2px 6px;border-radius:4px;background:var(--bg);color:var(--txt3)}
+.rb{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:500;white-space:nowrap}
+.sw{background:#EAF3DE;color:#3B6D11}.ss{background:#FAEEDA;color:#854F0B}.sf{background:#FCEBEB;color:#A32D2D}.sp{background:#E6F1FB;color:#185FA5}
+.rt-wrap{background:var(--sur2);border:0.5px solid var(--bdr);border-radius:var(--r);overflow:auto;margin-top:4px}
+.rt{width:100%;border-collapse:collapse;font-size:11px;white-space:nowrap}
+.rt th{background:var(--bg);font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;letter-spacing:.04em;padding:7px 10px;text-align:left;border-bottom:0.5px solid var(--bdr)}
+.rt td{padding:7px 10px;border-bottom:0.5px solid var(--bdr);color:var(--txt);vertical-align:middle}
+.rt tr:last-child td{border-bottom:none}
+.rt tr:hover td{background:var(--bg)}
+.rt-mono{font-family:monospace;font-size:10px;color:var(--txt3)}
+.tl{display:flex;flex-direction:column;gap:0;margin-top:4px}
+.tl-row{display:flex;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--bdr)}
+.tl-row:last-child{border-bottom:none}
+.tl-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.td-open{background:#E24B4A}.td-prog{background:#EF9F27}.td-res{background:#639922}
+.tl-body{flex:1}
+.tl-title{font-size:12px;font-weight:500;color:var(--txt)}
+.tl-meta{font-size:10px;color:var(--txt3);margin-top:2px;font-family:monospace}
+.tl-badge{font-size:9px;padding:1px 6px;border-radius:8px;font-weight:500}
+.tb-open{background:#FCEBEB;color:#A32D2D}.tb-prog{background:#FAEEDA;color:#854F0B}.tb-res{background:#EAF3DE;color:#3B6D11}
+.dash{margin-top:4px}
+.dash-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.ds{background:var(--sur2);border-radius:8px;padding:8px 10px}
+.ds-val{font-size:20px;font-weight:500;color:var(--txt)}
+.ds-lbl{font-size:10px;color:var(--txt3);margin-top:1px}
+.dash-bars{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.db-row{display:flex;align-items:center;gap:8px}
+.db-lbl{font-size:10px;color:var(--txt2);width:90px;text-align:right;flex-shrink:0}
+.db-track{flex:1;background:var(--bg);border-radius:4px;height:16px;overflow:hidden}
+.db-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:6px;font-size:10px;font-weight:500;color:#fff;min-width:20px}
+.dash-issues{background:var(--sur2);border-radius:8px;padding:8px 10px}
+.dash-issues-title{font-size:10px;color:var(--txt3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+.dash-issue-row{font-size:11px;color:var(--txt);padding:3px 0;display:flex;align-items:center;gap:6px;border-bottom:0.5px solid var(--bdr)}
+.dash-issue-row:last-child{border-bottom:none}
+.cmp{margin-top:4px}
+.cmp-months{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.cmp-month{flex:1;background:var(--sur2);border-radius:8px;padding:10px 12px;text-align:center}
+.cmp-m-title{font-size:10px;color:var(--txt3);margin-bottom:4px}
+.cmp-m-stat{font-size:24px;font-weight:500;color:var(--txt)}
+.cmp-open{margin-top:6px}
+.cmp-arrow{font-size:20px;color:var(--txt3)}
+.cmp-section{margin-bottom:10px}
+.cmp-sec-title{font-size:11px;font-weight:500;color:var(--txt2);margin-bottom:6px}
+.cmp-row{font-size:11px;color:var(--txt);padding:4px 8px;background:var(--sur2);border-radius:6px;margin-bottom:3px}
+.switch-btn{padding:4px 10px;border-radius:8px;font-size:11px;font-family:var(--mono);background:rgba(79,140,255,.1);border:1px solid rgba(79,140,255,.25);color:var(--acc);cursor:pointer;transition:all .15s}
+.switch-btn:hover{background:rgba(79,140,255,.2)}
+.role-badge{padding:3px 8px;border-radius:8px;font-size:10px;font-family:var(--mono);white-space:nowrap;flex-shrink:0;align-self:center}
+.user-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-bottom:20px;width:100%;min-height:80px}
+.user-btn{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 10px;border-radius:14px;border:2px solid var(--bdr);background:var(--sur2);cursor:pointer;transition:all .18s;width:76px}
+.user-btn:hover{border-color:var(--acc);background:rgba(79,140,255,.08);transform:translateY(-2px)}
+.user-btn.selected{border-color:var(--acc);background:rgba(79,140,255,.12);transform:translateY(-2px)}
+.user-av{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.user-name-sm{font-size:11px;font-weight:500;color:var(--txt);text-align:center}
+.user-name{font-size:12px;font-weight:500;color:var(--txt)}
+.user-role{font-size:10px;font-family:var(--mono);margin-top:1px}
+.pin-section{border-top:0.5px solid var(--bdr);padding-top:14px;margin-top:4px}
+.pin-label{font-size:11px;color:var(--txt2);margin-bottom:8px;font-family:var(--mono)}
+.b-blocked{background:rgba(255,107,107,.12);color:var(--dan)}
+.b-it_request{background:rgba(255,209,102,.15);color:var(--wrn)}
+.suggestions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.sug-btn{padding:4px 10px;border-radius:16px;font-size:11px;background:rgba(79,140,255,.08);border:1px solid rgba(79,140,255,.2);color:var(--acc);cursor:pointer;transition:all .15s;font-family:var(--mono)}
+.sug-btn:hover{background:rgba(79,140,255,.16)}
+.typing{display:flex;align-items:center;gap:4px;padding:12px 14px}
+.typing span{width:5px;height:5px;border-radius:50%;background:var(--txt3);animation:bounce .8s ease-in-out infinite}
+.typing span:nth-child(2){animation-delay:.15s}
+.typing span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
+.iarea{padding:12px 20px 16px;border-top:1px solid var(--bdr);background:var(--sur);flex-shrink:0}
+.irow{display:flex;gap:8px;align-items:flex-end;max-width:860px;margin:0 auto}
+.minput{flex:1;background:var(--sur2);border:1px solid var(--bdr);border-radius:var(--r);padding:10px 14px;color:var(--txt);font-family:var(--sans);font-size:14px;outline:none;resize:none;min-height:44px;max-height:100px;transition:border-color .15s;line-height:1.5}
+.minput:focus{border-color:var(--acc)}
+.minput::placeholder{color:var(--txt3)}
+.sendbtn{width:44px;height:44px;border-radius:var(--r);background:var(--acc);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.sendbtn:hover{background:#3a7aee;transform:scale(1.04)}
+.sendbtn:disabled{background:var(--sur2);cursor:not-allowed}
+.sendbtn svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:2}
+.ihint{text-align:center;margin-top:6px;font-size:10px;color:var(--txt3);font-family:var(--mono)}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:6px;color:var(--txt3);font-family:var(--mono);font-size:12px;text-align:center;padding:40px}
+.empty-icon{font-size:36px;opacity:.25;margin-bottom:8px}
+.empty-title{font-size:15px;color:var(--txt2);font-weight:600;font-family:var(--sans)}
+@media(max-width:600px){
+  .fab-stack{bottom:100px}
+  
+  header{padding:10px 14px}
+  .toolbar{padding:7px 14px}
+  .chat{padding:14px}
+  .iarea{padding:10px 14px 14px}
+  .msg.user,.msg.bot{max-width:92%}
+  .login-box{padding:28px 20px}
+  .logo-sub{display:none}
+}
+
+/* ── IT Dashboard ── */
+.dash-panel{background:var(--sur);border-bottom:1px solid var(--bdr);display:none;flex-direction:column;overflow-y:auto;max-height:300px}
+.dash-panel.open{display:flex}
+.dash-inner{padding:12px 20px}
+.dash-title{font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.notif-count{background:var(--dan);color:#fff;font-size:9px;padding:1px 6px;border-radius:10px;font-weight:700}
+.req-card{background:var(--sur2);border:0.5px solid var(--bdr);border-left:3px solid var(--wrn);border-radius:10px;padding:10px 12px;margin-bottom:6px}
+.req-card.done{border-left-color:var(--acc2);opacity:.6}
+.req-row1{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.req-who{font-size:11px;font-weight:600;color:var(--txt)}
+.req-when{font-size:10px;color:var(--txt3);font-family:monospace}
+.req-text{font-size:12px;color:var(--txt2);line-height:1.5;margin-bottom:8px}
+.req-btns{display:flex;gap:6px;flex-wrap:wrap}
+.rbtn{padding:3px 10px;border-radius:6px;font-size:11px;cursor:pointer;border:0.5px solid var(--bdr);background:var(--sur);color:var(--txt2);font-family:monospace}
+.rbtn.blue{background:var(--acc);color:#fff;border-color:var(--acc)}
+.rbtn.green{background:rgba(56,217,169,.1);color:var(--acc2);border-color:rgba(56,217,169,.3)}
+.reply-area{margin-top:8px;display:none}
+.reply-area.open{display:block}
+.reply-ta{width:100%;background:var(--bg);border:0.5px solid var(--acc);border-radius:8px;padding:8px;color:var(--txt);font-size:12px;font-family:monospace;resize:none;outline:none;min-height:48px}
+.reply-go{background:var(--acc);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;margin-top:4px}
+/* ── Quick-add forms ── */
+.qform{position:fixed;bottom:76px;right:20px;width:300px;background:var(--sur);border:1px solid var(--bdr);border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:60;display:none;flex-direction:column}
+.qform.open{display:flex}
+.qf-head{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:0.5px solid var(--bdr)}
+.qf-title{font-size:13px;font-weight:600;color:var(--txt)}
+.qf-close{width:22px;height:22px;border-radius:5px;border:none;background:var(--sur2);color:var(--txt2);cursor:pointer;font-size:13px;line-height:1}
+.qf-body{padding:12px 14px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;max-height:400px}
+.qf-label{font-size:10px;color:var(--txt2);font-family:monospace;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:3px}
+.qf-input,.qf-select,.qf-ta{width:100%;background:var(--sur2);border:0.5px solid var(--bdr);border-radius:7px;padding:7px 9px;color:var(--txt);font-size:12px;font-family:monospace;outline:none}
+.qf-ta{resize:none;min-height:50px}
+.qf-select option{background:var(--sur2)}
+.qf-submit{background:var(--acc);color:#fff;border:none;border-radius:8px;padding:9px;font-size:13px;font-weight:600;cursor:pointer;width:100%}
+.qf-submit:disabled{background:var(--sur2);color:var(--txt3);cursor:not-allowed}
+/* ── FAB buttons ── */
+.fab-stack{position:fixed;bottom:76px;right:16px;display:none;flex-direction:column;gap:6px;align-items:flex-end;z-index:50}
+.fab-stack.show{display:flex}
+.fab-item-row{display:flex;align-items:center;gap:8px}
+.fab-lbl{font-size:11px;color:var(--txt2);font-family:monospace;background:var(--sur);padding:3px 8px;border-radius:6px;border:0.5px solid var(--bdr);white-space:nowrap}
+.fab-btn{width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;box-shadow:0 3px 10px rgba(0,0,0,.35);transition:transform .15s}
+.fab-btn:hover{transform:scale(1.1)}
+.it-only{display:none}
+.dash-chip{display:none;align-items:center;gap:6px;padding:4px 11px;border-radius:20px;font-size:11px;font-family:monospace;background:rgba(255,107,107,.1);border:0.5px solid rgba(255,107,107,.3);color:var(--dan);cursor:pointer}
+.dash-chip.show{display:flex}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--dan);animation:glow 1.5s ease-in-out infinite;flex-shrink:0}
+.msg-time{font-size:9px;color:var(--txt3);font-family:monospace;margin-top:3px;text-align:right;opacity:.7}
+.dot.offline{background:#e74c3c;animation:none}
+
+/* ── Theme override ─────────────────────────────────────── */
+body.force-light {
+  --bg:#f0f2f5;
+  --sur:#ffffff;
+  --sur2:#e8edf2;
+  --bdr:rgba(0,0,0,.1);
+  --txt:#111827;
+  --txt2:#374151;
+  --txt3:#6b7280;
+  --acc:#3b78e7;
+  --acc2:#0d9488;
+  --dan:#dc2626;
+  --wrn:#d97706;
+  color-scheme:light;
+}
+body.force-dark {
+  color-scheme:dark;
+}
+.theme-toggle{
+  width:32px;height:32px;border-radius:8px;border:0.5px solid var(--bdr);
+  background:var(--sur2);color:var(--txt2);cursor:pointer;font-size:15px;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;
+  flex-shrink:0;
+}
+.theme-toggle:hover{background:var(--bdr);color:var(--txt)}
+</style>
+</head>
+<body>
+<div id="toastContainer"></div>
+<div id="loginOverlay">
+  <div class="login-box">
+    <div class="login-logo"><svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg></div>
+    <div class="login-title">IT Asset Assistant</div>
+    <div class="login-sub" style="display:flex;align-items:center;justify-content:space-between;">
+      <span>Bennet &amp; Bernard &mdash; Who are you?</span>
+      <button class="theme-toggle" id="themeBtnLogin" onclick="toggleTheme()" title="Toggle dark/light mode" style="flex-shrink:0">&#9790;</button>
+    </div>
+    <div class="user-grid" id="userGrid"></div>
+    <div class="pin-section" id="pinSection" style="display:none">
+      <div class="pin-label">PIN for <strong id="selectedUserName"></strong></div>
+      <input class="login-input" id="loginPin" type="password" placeholder="&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;" onkeydown="loginKeydown(event)" autocomplete="new-password"/>
+      <button class="login-btn" onclick="doLogin()">Sign In &rarr;</button>
+    </div>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+<header>
+  <div class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg></div>
+    <div><div class="logo-text">IT Asset Assistant</div><div class="logo-sub">Bennet &amp; Bernard</div></div>
+  </div>
+  <div class="hdr-right">
+    <div class="status-pill">
+      <div class="dot"></div>
+      <div>
+        <div style="font-size:10px;font-family:monospace;" id="userLabel">—</div>
+        <div style="font-size:9px;font-family:monospace;" id="userRole"></div>
+      </div>
+    </div>
+    <span id="lastFetched" style="font-size:9px;color:var(--txt3);font-family:monospace;display:none"></span>
+    <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" title="Toggle dark/light mode">&#9790;</button>
+    <button class="refresh-btn it-only" onclick="refreshData()" title="Force refresh data from sheet">&#8635;</button>
+    <button class="logout-btn" onclick="doLogout()" title="Switch user or sign out">&#8646; Switch</button>
+  </div>
+</header>
+<div id="alertsBar"></div>
+<div class="dash-panel" id="dashPanel"></div>
+<div class="toolbar">
+  <span class="tlabel">quick ask:</span>
+  <button class="qbtn" onclick="qa('Show all Dell devices')">Dell devices</button>
+  <button class="qbtn" onclick="qa('Show all open maintenance tickets')">open tickets</button>
+  <button class="qbtn" onclick="qa('How many spare devices?')">spare count</button>
+  <button class="qbtn" onclick="qa('List devices at Tudor Office')">Tudor Office</button>
+  <button class="qbtn" onclick="qa('Show antivirus expiring soon')">AV expiry</button>
+  <button class="qbtn" onclick="qa('Show all software subscriptions')">software</button>
+  <button class="qbtn" onclick="qa('Show purchase history')">purchases</button>
+  <button class="qbtn" onclick="qa('Show AMC and warranty status')">AMC/warranty</button>
+  <button class="qbtn" onclick="qa('Compare January and February maintenance')">Jan vs Feb</button>
+  <button class="qbtn" onclick="qa('Generate full inventory report')">full report</button>
+</div>
+<div class="chat" id="chatBox">
+  <div class="empty" id="emptyState">
+    <div class="empty-icon">&#128187;</div>
+    <div class="empty-title">IT Asset Assistant</div>
+    <div>Sign in to ask about devices, maintenance or inventory</div>
+  </div>
+</div>
+<div class="iarea">
+  <div class="irow">
+    <span class="role-badge" id="roleBadge">👁 View</span>
+    <textarea class="minput" id="msgInput" placeholder="Ask about devices, sites, maintenance... (Ctrl+K)" rows="1" maxlength="500" onkeydown="handleKey(event)" oninput="autoResize(this);updateCharCount(this)"></textarea>
+    <span id="charCount" style="font-size:10px;font-family:monospace;color:var(--txt3);align-self:center;min-width:36px;text-align:right"></span>
+    <button class="sendbtn" id="sendBtn" onclick="send()" disabled>
+      <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+  <div class="ihint">Reads live from Google Sheets &middot; Powered by Claude AI &middot; Press Enter to send</div>
+</div>
+<!-- Add Asset Form -->
+<div class="qform" id="qfAsset">
+  <div class="qf-head"><span class="qf-title">&#43; Add New Device</span><button class="qf-close" onclick="closeForm('asset')">&#215;</button></div>
+  <div class="qf-body">
+    <div><label class="qf-label">Device Type *</label><select class="qf-select" id="qa-type"><option>Laptop</option><option>Desktop</option><option>Mobile</option><option>Printer</option><option>Monitor</option><option>UPS</option><option>Network Switch</option><option>DVR/NVR</option><option>TV</option><option>ID Card</option><option>Other</option></select></div>
+    <div><label class="qf-label">Brand *</label><input class="qf-input" id="qa-brand" placeholder="Dell, HP, Samsung..."/></div>
+    <div><label class="qf-label">Model</label><input class="qf-input" id="qa-model" placeholder="Inspiron 15, Galaxy A15..."/></div>
+    <div><label class="qf-label">Serial Number</label><input class="qf-input" id="qa-serial" placeholder="Serial no / MAC address"/></div>
+    <div><label class="qf-label">Assigned To</label><input class="qf-input" id="qa-user" placeholder="Employee name"/></div>
+    <div><label class="qf-label">Department</label><select class="qf-select" id="qa-dept"><option>IT</option><option>Accounts</option><option>Admin</option><option>Sales</option><option>CRM</option><option>Legal</option><option>Digital Marketing</option><option>Research</option><option>Architect</option><option>Operations</option><option>Directors</option><option>Site Engg</option><option>Store</option></select></div>
+    <div><label class="qf-label">Location *</label><select class="qf-select" id="qa-loc"><option>B&amp;B Campal</option><option>Tudor Office</option><option>Tudor House Assagao</option><option>BVA Assagao</option><option>BVG Campal</option><option>BVG Assagao</option><option>Belair Villa</option><option>Lakeshire Corlim</option><option>CDM</option><option>Northquay</option><option>Casa Braga</option><option>Grosvenor House</option><option>Moira Site Office</option></select></div>
+    <div><label class="qf-label">Status</label><select class="qf-select" id="qa-status"><option>Working</option><option>Spare</option><option>Faulty</option></select></div>
+    <button class="qf-submit" id="qa-submit" onclick="submitAsset()">&#43; Add to Sheet</button>
+  </div>
+</div>
+
+<!-- Log Maintenance Form -->
+<div class="qform" id="qfMaint">
+  <div class="qf-head"><span class="qf-title">&#128295; Log Maintenance</span><button class="qf-close" onclick="closeForm('maint')">&#215;</button></div>
+  <div class="qf-body">
+    <div><label class="qf-label">Site *</label><select class="qf-select" id="qm-site"><option>Black Vanilla Campal</option><option>Black Vanilla Assagao</option><option>B &amp; B Office</option><option>Bel-Air</option><option>Sevens Assagao</option><option>Lakeshire Apartments</option><option>Tudor House</option><option>Mapusa Residence</option><option>Grosvenor</option><option>Eltoledo</option><option>Moira Office</option><option>CDM</option><option>Solstice (Varun Sir House)</option><option>Northquay</option><option>Casa Braga</option></select></div>
+    <div><label class="qf-label">Category</label><select class="qf-select" id="qm-cat"><option>Custom Homes</option><option>Gastronomy</option><option>Office</option></select></div>
+    <div><label class="qf-label">CCTV Status</label><select class="qf-select" id="qm-cctv"><option>Working</option><option>Not working</option><option>NA</option></select></div>
+    <div><label class="qf-label">UPS Status</label><select class="qf-select" id="qm-ups"><option>Working</option><option>Not working</option><option>NA</option></select></div>
+    <div><label class="qf-label">Issue / Work Done *</label><textarea class="qf-ta" id="qm-issue" rows="2" placeholder="Describe the issue or maintenance done..."></textarea></div>
+    <div><label class="qf-label">Overall Status</label><select class="qf-select" id="qm-status"><option>All Good</option><option>Resolved</option><option>Open</option><option>Need Maintenance</option><option>In Progress</option></select></div>
+    <button class="qf-submit" id="qm-submit" onclick="submitMaint()">&#128295; Log to Sheet</button>
+  </div>
+</div>
+
+<!-- IT Team FAB buttons -->
+<div class="fab-stack" id="fabStack">
+  <div class="fab-item-row"><span class="fab-lbl">Add device</span><button class="fab-btn" style="background:#4f8cff;color:#fff" onclick="openForm('asset')" title="Add new device">&#43;</button></div>
+  <div class="fab-item-row"><span class="fab-lbl">Log maintenance</span><button class="fab-btn" style="background:#ED7D31;color:#fff" onclick="openForm('maint')" title="Log maintenance">&#128295;</button></div>
+  <div class="fab-item-row"><span class="fab-lbl" id="dashChipLbl"></span><button class="dash-chip" id="dashChip" onclick="toggleDash()">queries</button></div>
+</div>
+<script>
+var C = {
+  // Keys removed from frontend — all API calls go through Netlify functions
+  // For local development only, set these in a local .env or pass directly
+  anthro: '',
+  nim:    '',
+  sheet:  '1n1TnyQleh14cGKTbtiOA5hDFEnwcF7JB3t47CUZs_aM',
+  google: 'AIzaSyAal8LEHSuYYrocWDEZVsyOMOubommjvko', // read-only public sheet key — safe to expose
+  sa:     'bnb-it-sheets@blissful-racer-490505-d2.iam.gserviceaccount.com'
+};
+
+// ── User directory ────────────────────────────────────────────────────────
+// Roles: 'it' = full access, 'admin' = full access, 'manager' = read + comment only
+// ── PIN hashing (FNV-1a) — must be defined BEFORE USERS ─────────────────
+function hashPin(pin) {
+  var hash = 2166136261;
+  for (var i = 0; i < pin.length; i++) {
+    hash ^= pin.charCodeAt(i);
+    hash = (hash * 16777619) >>> 0;
+  }
+  return hash.toString(16);
+}
+
+// ── User registry ─────────────────────────────────────────────────────────
+// PINs are hashed — never stored or shown in plain text
+// Default PINs match usernames. Change by replacing pin_hash with hashPin('newpin')
+var USERS = {
+  'deeptesh': { name:'Deeptesh',     role:'it',      avatar:'DT', color:'#4f8cff', pin_hash: hashPin('deeptesh') },
+  'rajat':    { name:'Rajat',        role:'it',      avatar:'RJ', color:'#4f8cff', pin_hash: hashPin('rajat')    },
+  'it1234':   { name:'IT Team',      role:'it',      avatar:'IT', color:'#4f8cff', pin_hash: hashPin('it1234')   },
+  'fabiola':  { name:'Fabiola Maam', role:'manager', avatar:'FM', color:'#9b59b6', pin_hash: hashPin('fabiola')  },
+  'varun':    { name:'Varun Sir',    role:'manager', avatar:'VS', color:'#9b59b6', pin_hash: hashPin('varun')    }
+};
+
+// Role permissions
+var PERMISSIONS = {
+  it:      { canRead:true,  canWrite:true,  canComment:true,  canAddAsset:true,  canUpdateStatus:true  },
+  admin:   { canRead:true,  canWrite:true,  canComment:true,  canAddAsset:true,  canUpdateStatus:true  },
+  manager: { canRead:true,  canWrite:false, canComment:true,  canAddAsset:false, canUpdateStatus:false }
+};
+
+function can(action) {
+  if (!currentUser) return false;
+  var perms = PERMISSIONS[currentUser.role] || PERMISSIONS.manager;
+  return perms[action] === true;
+}
+
+var currentUser = null;
+var conversationHistory = [];
+
+// ── Online / offline detector ────────────────────────────────────────────
+function updateOnlineStatus() {
+  var dot = document.querySelector('.dot');
+  if (!dot) return;
+  if (navigator.onLine) { dot.classList.remove('offline'); dot.title = 'Connected'; }
+  else { dot.classList.add('offline'); dot.title = 'Offline — data may be stale'; toast('You are offline. Data may not refresh.','error',5000); }
+}
+window.addEventListener('online',  updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+
+function checkLogin() {
+  // Always show login screen - no auto-login
+  // Only keep session within same tab session (page refresh = re-login)
+  showLoginScreen();
+}
+
+function showLoginScreen() {
+  currentUser = null;
+  document.getElementById('loginOverlay').style.display = 'flex';
+  document.getElementById('loginPin').value = '';
+  document.getElementById('loginErr').textContent = '';
+  renderUserButtons();
+}
+
+function renderUserButtons() {
+  var grid = document.getElementById('userGrid');
+  if (!grid) return;
+  var html = '';
+  Object.entries(USERS).forEach(function(e) {
+    var code = e[0], u = e[1];
+    // Show avatar + first name only — no PIN, no role label exposed
+    var firstName = u.name.split(' ')[0];
+    html += '<div class="user-btn" onclick="selectUser(this.dataset.code)" data-code="'+code+'">'
+      + '<div class="user-av" style="background:'+u.color+'">'+u.avatar+'</div>'
+      + '<div class="user-name-sm">'+firstName+'</div>'
+      + '</div>';
+  });
+  grid.innerHTML = html;
+}
+
+var selectedCode = null;
+function selectUser(code) {
+  selectedCode = code;
+  document.querySelectorAll('.user-btn').forEach(function(b) {
+    b.classList.toggle('selected', b.dataset.code === code);
+  });
+  document.getElementById('pinSection').style.display = 'block';
+  document.getElementById('selectedUserName').textContent = USERS[code].name;
+  document.getElementById('loginPin').focus();
+  document.getElementById('loginErr').textContent = '';
+}
+
+function doLogin() {
+  if (_loginLocked) { toast('Account locked. Please wait 60 seconds.','error'); return; }
+  var pin = document.getElementById('loginPin').value.trim().toLowerCase();
+  if (!selectedCode) {
+    document.getElementById('loginErr').textContent = 'Please select a user first.';
+    return;
+  }
+  // Compare hashed PIN — never compare plain text
+  var user = USERS[selectedCode];
+  if (user && hashPin(pin) === user.pin_hash) {
+    currentUser = Object.assign({ code: selectedCode }, user);
+    _loginAttempts = 0;
+    showApp();
+  } else {
+    _loginAttempts++;
+    if (_loginAttempts >= 5) {
+      _loginLocked = true;
+      document.getElementById('loginErr').textContent = 'Too many attempts. Please wait 60 seconds.';
+      document.getElementById('loginPin').disabled = true;
+      setTimeout(function(){ _loginAttempts=0; _loginLocked=false; document.getElementById('loginPin').disabled=false; document.getElementById('loginErr').textContent=''; }, 60000);
+      return;
+    }
+    document.getElementById('loginErr').textContent = 'Wrong PIN (' + (5-_loginAttempts) + ' attempts left). PIN = your username.';
+    document.getElementById('loginPin').value = '';
+    document.getElementById('loginPin').focus();
+  }
+}
+
+function showApp() {
+  document.getElementById('loginOverlay').style.display = 'none';
+  selectedCode = null;
+  // Update header
+  document.getElementById('userLabel').textContent = currentUser.name;
+  var roleEl = document.getElementById('userRole');
+  if (roleEl) {
+    roleEl.textContent = currentUser.role === 'manager' ? 'Management' : 'IT Team';
+    roleEl.style.color = currentUser.role === 'manager' ? '#38d9a9' : '#4f8cff';
+  }
+  // Role-based toolbar
+  applyRoleUI();
+  document.getElementById('sendBtn').disabled = false;
+  conversationHistory = [];
+  var chatBox = document.getElementById('chatBox');
+  chatBox.innerHTML = getEmptyState();
+  loadAlerts();
+  // Poll every 2 minutes so IT sees new management tickets automatically
+  if (can('canWrite')) {
+    setInterval(function(){
+      loadAlerts().catch(function(){});
+    }, 120000);
+  }
+  var roleMsg = can('canWrite')
+    ? 'Welcome ' + currentUser.name + ' (IT) — you have full read/write access. You can query data, add assets, log maintenance entries and update records.'
+    : 'Welcome ' + currentUser.name + ' — you have read access. You can query any data and add comments/queries for the IT team.';
+  sysMsg(roleMsg);
+}
+
+function applyRoleUI() {
+  var isIT = can('canWrite');
+  // Show/hide IT-only quick buttons
+  document.querySelectorAll('.it-only').forEach(function(el) {
+    el.style.display = isIT ? (el.tagName==='BUTTON'?'inline-flex':el.tagName==='SPAN'?'inline-flex':'flex') : 'none';
+  });
+  // Update placeholder
+  var inp = document.getElementById('msgInput');
+  if (inp) {
+    inp.placeholder = isIT
+      ? 'Query data, add assets, log maintenance, update records...'
+      : 'Ask about devices, sites, maintenance status...';
+  }
+  // Show role badge on input
+  var badge = document.getElementById('roleBadge');
+  if (badge) {
+    badge.textContent = isIT ? '✎ IT' : '👁 View';
+    badge.style.background = isIT ? 'rgba(79,140,255,.15)' : 'rgba(56,217,169,.12)';
+    badge.style.color = isIT ? '#4f8cff' : '#38d9a9';
+  }
+  var lf = document.getElementById('lastFetched');
+  if (lf) lf.style.display = isIT ? 'inline' : 'none';
+}
+
+function doLogout() {
+  currentUser = null;
+  conversationHistory = [];
+  showLoginScreen();
+}
+
+function loginKeydown(e) { if (e.key === 'Enter') doLogin(); }
+
+
+
+// ── DUAL API: NVIDIA NIM (primary/free) + Anthropic (fallback) ───────────
+// ── AI API — Haiku primary (fast), NIM fallback (free) ──────────────────
+var _lastApiMs = 0;
+
+async function callClaude(system, userMsg, maxTokens) {
+  maxTokens = maxTokens || 500;
+  var t0 = Date.now();
+  var isHosted = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+
+  if (isHosted) {
+    // Primary: Claude Haiku via Netlify proxy (fastest Anthropic model)
+    var payload = { model:'claude-haiku-4-5-20251001', max_tokens:maxTokens, system:system, messages:[{role:'user',content:userMsg}] };
+    try {
+      var res = await fetch('/api/claude-proxy', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      if (res.ok) { var d=await res.json(); _lastApiMs=Date.now()-t0; return d.content&&d.content[0]?d.content[0].text:''; }
+    } catch(e) {}
+    // Fallback: NIM with fast 8B model
+    var nimP = { model:'meta/llama-3.1-8b-instruct', messages:[{role:'system',content:system},{role:'user',content:userMsg}], max_tokens:maxTokens, temperature:0.1 };
+    try {
+      var nr=await fetch('/api/nim-proxy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(nimP)});
+      if (nr.ok) { var nd=await nr.json(); _lastApiMs=Date.now()-t0; return nd.choices&&nd.choices[0]?nd.choices[0].message.content:''; }
+    } catch(e) {}
+    throw new Error('Unable to reach AI API. Check Netlify function logs.');
+  } else {
+    // Local fallback with CORS proxy
+    var p2 = { model:'claude-haiku-4-5-20251001', max_tokens:maxTokens, system:system, messages:[{role:'user',content:userMsg}] };
+    var target='https://api.anthropic.com/v1/messages';
+    var headers={'Content-Type':'application/json','x-api-key':C.anthro,'anthropic-version':'2023-06-01'};
+    var proxies=['https://corsproxy.io/?','https://api.allorigins.win/raw?url='];
+    for(var i=0;i<proxies.length;i++){
+      try{ var pr=await fetch(proxies[i]+encodeURIComponent(target),{method:'POST',headers:headers,body:JSON.stringify(p2)}); if(pr.ok){var pd=await pr.json();_lastApiMs=Date.now()-t0;return pd.content&&pd.content[0]?pd.content[0].text:'';} }catch(e){}
+    }
+    throw new Error('Unable to reach Claude API locally.');
+  }
+}
+
+
+// ── FAST LOCAL ROUTER — keyword matching, no AI needed ────────────────────
+function fastRoute(msg, original) {
+  // Helpers
+  function has(words) { return words.some(function(w){return msg.includes(w);}); }
+  function hasAll(words) { return words.every(function(w){return msg.includes(w);}); }
+  function search(sheet, filters) { return {intent:'search', sheet:sheet, filters:filters||{}}; }
+
+  // Write operations - check role
+  if (has(['add maintenance','log maintenance','add ticket','log ticket','create ticket','add entry'])) {
+    if (!can('canWrite')) return {intent:'it_request'};
+    var site='', issue='', devType='';
+    var siteMatch = original.match(/(?:at|for|site:?)\s+([A-Z][a-zA-Z\s]+?)(?:\s*[—\-:]|$)/);
+    if (siteMatch) site = siteMatch[1].trim();
+    var issueMatch = original.match(/[—\-:]\s*(.+)$/);
+    if (issueMatch) issue = issueMatch[1].trim();
+    if (msg.includes('cctv')||msg.includes('camera')) devType='CCTV';
+    return {intent:'add_ticket', site:site, issue:issue||original, device_type:devType, category:'Custom Homes'};
+  }
+  if (has(['add asset','add new','log new asset','add device','register device'])) {
+    if (!can('canWrite')) return {intent:'it_request'};
+    return {intent:'add_asset'};
+  }
+  // Manager requests — route ALL manager queries as IT requests
+  // Managers cannot write directly; everything becomes a tracked ticket
+  if (!can('canWrite')) {
+    // Write attempts → always it_request
+    if (has(['update','change','modify','set status','mark as','fix','repair','replace'])) return {intent:'it_request'};
+    // Questions/concerns → it_request so IT is notified
+    if (has(['why','what happened','when will','can you','please','not working','issue','problem',
+             'check','look into','follow up','status of','escalate','urgent','asap'])) return {intent:'it_request'};
+  }
+
+  // Reports & comparisons
+  if (has(['full report','inventory report','generate report','summary report'])) return {intent:'report'};
+  if (has(['jan','january']) && has(['feb','february'])) return {intent:'maintenance_compare'};
+  if (has(['compare','difference','changed','vs'])) return {intent:'maintenance_compare'};
+
+  // Maintenance
+  if (has(['open ticket','pending ticket','open issue','pending issue','open maintenance','need maintenance'])) return {intent:'pending_maintenance'};
+  if (has(['open','pending']) && has(['site','maintenance','ticket'])) return {intent:'pending_maintenance'};
+
+  // Antivirus
+  if (has(['antivirus','quickheal','bitdefender','av license','av key'])) return {intent:'antivirus', expiry_filter: has(['expir','due','soon','upcoming','renew'])};
+
+  // Spare
+  if (has(['spare','unassigned','not assigned']) && !has(['repair','repaired'])) return {intent:'spare'};
+
+  // Count queries
+  if (has(['how many','count','total number','number of'])) {
+    if (has(['department','dept'])) return {intent:'count', sheet:'IT Asset Inventory', group_by:'Department'};
+    if (has(['location','site','office'])) return {intent:'count', sheet:'IT Asset Inventory', group_by:'Location'};
+    if (has(['brand','make'])) return {intent:'count', sheet:'IT Asset Inventory', group_by:'Brand'};
+    if (has(['spare','it spare'])) return {intent:'spare'};
+    return {intent:'count', sheet:'IT Asset Inventory', group_by:'Device_Type'};
+  }
+
+  // Network/CCTV
+  if (has(['dvr','nvr','cctv','camera']) && has(['show','list','display','all'])) return search('Network Devices', {Device_Type:'DVR'});
+  if (has(['ups']) && has(['site','location','faulty','working','show','list'])) return search('Network Devices', {Device_Type:'UPS'});
+  if (hasAll(['network','device'])) return search('Network Devices', {});
+  if (has(['faulty network','network faulty','not working network'])) return search('Network Devices', {Status:'Faulty'});
+  if (has(['router','switch','network'])) return search('Network Devices', {});
+
+  // Pendrives/stands/accessories
+  if (has(['pendrive','pen drive','usb drive','flash drive'])) return search('Accessories', {Item_Type:'Pendrive'});
+  if (has(['laptop stand','stand'])) return search('Accessories', {Item_Type:'Laptop Stand'});
+  if (has(['external hard','hdd','ssd']) && has(['external','portable'])) return search('Accessories', {Item_Type:'External HDD'});
+  if (has(['accessories','accessory'])) return search('Accessories', {});
+
+  // Software
+  if (has(['software','subscription','license','tally','google workspace','adobe','sophos',
+    'greythr','supersee','checkpoint','follow-up boss','corel','autocad','bitdefender',
+    'smart office','software inventory','sw inventory','renewal tracker'])) {
+    // Filter by status if asked
+    if (has(['expir','due soon','upcoming renewal','renew soon'])) return search('Software Subscriptions', {Status:'Active'});
+    if (has(['auto renewal','auto-renewal'])) return search('Software Subscriptions', {Auto_Renewal:'Yes'});
+    return search('Software Subscriptions', {});
+  }
+
+  // Digital/camera assets
+  if (has(['camera','lens','fujifilm','dji','drone','osmo','digital asset'])) return search('Digital Assets', {});
+
+  // Purchase register
+  if (has(['purchase','bought','procured','invoice','vendor','cost','price'])) return search('Purchase Register', {});
+
+  // Device repairs
+  if (has(['repair','repaired','fixed','service','hinge','keyboard replace'])) return search('Device Repairs', {});
+
+  // Maintenance log by month
+  if (has(['january','jan 2026'])) return search('Maintenance Log', {Month:'January'});
+  if (has(['february','feb 2026'])) return search('Maintenance Log', {Month:'February'});
+  if (has(['march','mar 2026'])) return search('Maintenance Log', {Month:'March'});
+  if (has(['maintenance log','maintenance history','all maintenance'])) return search('Maintenance Log', {});
+
+  // Device type searches
+  var deviceMap = {
+    'laptop':'Laptop','desktop':'Desktop','mobile':'Mobile','phone':'Mobile',
+    'printer':'Printer','drone':'Drone','tv':'TV','television':'TV',
+    'monitor':'Monitor','ups':'UPS','tablet':'Tablet','server':'Server',
+    'id card':'ID Card','walkie':'Walkie Talkie','intercom':'Intercom',
+    'biometric':'Biometric','webcam':'Webcam','speaker':'Speaker'
+  };
+  for (var dtype in deviceMap) {
+    if (msg.includes(dtype)) return search('IT Asset Inventory', {Device_Type:deviceMap[dtype]});
+  }
+
+  // Brand searches
+  var brands = ['dell','hp','lenovo','apple','samsung','fujifilm','dji','epson','canon','logitech','hikvision','cp plus'];
+  for (var i=0;i<brands.length;i++) {
+    if (msg.includes(brands[i])) return search('IT Asset Inventory', {Brand: brands[i].charAt(0).toUpperCase()+brands[i].slice(1)});
+  }
+
+  // Location searches
+  var locations = ['tudor','campal','assagao','moira','belair','grosvenor','corlim','northquay','casa braga','cdm','qdm','bvg','bva'];
+  for (var j=0;j<locations.length;j++) {
+    if (msg.includes(locations[j])) return search('IT Asset Inventory', {Location: locations[j].charAt(0).toUpperCase()+locations[j].slice(1)});
+  }
+
+  // Person searches
+  if (has(['assigned to','devices of','laptop of','assets of','who has'])) {
+    var names = ['anisha','savio','kuldeep','akshay','raheed','leslie','taneja','lendl','ishika','clarissa','sneha','deeptesh','rajat','gautami','nitesh','deepaswi','nisha','vinit','denzil','myron','galvin','jason','shervyn','varun','lindsay','fabiola'];
+    for (var k=0;k<names.length;k++) {
+      if (msg.includes(names[k])) return search('IT Asset Inventory', {Assigned_User: names[k].charAt(0).toUpperCase()+names[k].slice(1)});
+    }
+  }
+
+  // Status filters
+  if (has(['faulty device','faulty asset','broken device'])) return search('IT Asset Inventory', {Status:'Faulty'});
+
+  // Why/how/policy questions → management query, needs AI
+  if (has(['why','how come','what happened','reason','explain','suggest','recommendation','should we','when will'])) return {intent:'management_query'};
+
+  // Default: use AI to figure it out (rare fallback)
+  return {intent:'management_query'};
+}
+
+// ── Sheet tab aliases (fallback names for each tab) ─────────────────────
+var TAB_ALIASES = {
+  // ── Core inventory tabs ───────────────────────────────────────────
+  'IT Asset Inventory':     ['IT Asset Inventory','IT Asset inventory'],
+  'Spare Inventory':        ['Spare Inventory','IT Spare Assets','Spare inventory'],
+  'Maintenance Log':        ['Maintenance Log','Maintenance log'],
+  'Antivirus Tracker':      ['Antivirus Tracker','Antivirus tracker','Antivirus Renewal','ANTIVIRUS TRACKER'],
+  'Network Devices':        ['Network Devices','Network devices','Network Device'],
+  'Accessories':            ['Accessories','accessories','Pendrives & Stands'],
+  // ── Extended tabs ─────────────────────────────────────────────────
+  'Purchase Register':      ['Purchase Register','Purchase register','Purchase Assets'],
+  'Device Repairs':         ['Device Repairs','Device repairs'],
+  'Software Subscriptions': ['Software Subscriptions','Software subscriptions','Software Inventory','Software inventory','IT Software Subscription Renewal Tracker','Software Renewal Tracker'],
+  'Digital Assets':         ['Digital Assets','Digital assets'],
+  'Audit Log':              ['Audit Log','AuditLog','audit log']
+};
+
+// ── 30-second sheet cache ─────────────────────────────────────────────────
+var _sheetCache = {}, _cacheTime = {}, CACHE_TTL = 30000;
+
+// ── Service account proxy (read/write/update via Netlify function) ────────
+async function sheetsProxy(action, params) {
+  var isHosted = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+  if (!isHosted) {
+    if (action !== 'read') throw new Error('Write operations require the hosted URL.');
+    var url = 'https://sheets.googleapis.com/v4/spreadsheets/'+C.sheet+'/values/'+encodeURIComponent(params.sheet)+'?key='+C.google;
+    var res = await fetch(url);
+    if (!res.ok) return null;
+    return await res.json();
+  }
+  var qs = (action === 'read' && params.sheet) ? '?sheet='+encodeURIComponent(params.sheet) : '';
+  if (action === 'read') {
+    var res2 = await fetch('/api/sheets-proxy'+qs);
+    var d2 = await res2.json().catch(function(){ return null; });
+    if (!d2) return null;
+    if (d2.values) return d2;  // success — has values
+    if (d2.error) console.warn('[sheetsProxy] tab error:', d2.sheet, '→', d2.error);
+    return null;
+  }
+  var res3 = await fetch('/api/sheets-proxy', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(Object.assign({action:action}, params))
+  });
+  if (!res3.ok) { var e=await res3.json().catch(function(){return{};}); throw new Error('Sheets error: '+((e.error||{}).message||res3.status)); }
+  return await res3.json();
+}
+
+// ── Find 1-based row number of a matching value in a sheet ───────────────
+async function findRowIndex(sheetName, colName, colValue) {
+  var names = TAB_ALIASES[sheetName] || [sheetName];
+  var rawRows = await tryFetch(names[0]);
+  if (!rawRows) return -1;
+  var hi = 0;
+  for (var j=0;j<Math.min(rawRows.length,5);j++) {
+    if (rawRows[j].filter(function(c){return c&&c.toString().trim();}).length>=3){hi=j;break;}
+  }
+  var headers = rawRows[hi].map(function(h){return (h||'').toString().trim();});
+  var colIdx  = headers.indexOf(colName);
+  if (colIdx<0) return -1;
+  for (var r=hi+1;r<rawRows.length;r++) {
+    if ((rawRows[r][colIdx]||'').toString().trim().toLowerCase()===colValue.toLowerCase()) return r+1;
+  }
+  return -1;
+}
+
+
+async function tryFetch(name) {
+  try {
+    var now = Date.now();
+    if (_sheetCache[name] && (now-(_cacheTime[name]||0)) < CACHE_TTL) return _sheetCache[name];
+    var rows = null;
+    var isHosted = window.location.protocol==='https:'||window.location.hostname==='localhost';
+    if (isHosted) {
+      // Try service account proxy first
+      try {
+        var d = await sheetsProxy('read',{sheet:name});
+        if (d && d.values) { rows = d.values; console.log('[tryFetch SA/API OK]',name,rows.length); }
+        else console.warn('[tryFetch proxy null]',name);
+      } catch(e1) { console.warn('[tryFetch proxy err]',name,e1.message); }
+      // Fall back to direct API key (browser-side, works if sheet is public/Viewer)
+      if (!rows && C.google) {
+        try {
+          var r2 = await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+C.sheet+'/values/'+encodeURIComponent(name)+'?key='+C.google);
+          if (r2.ok) { var d2b=await r2.json(); if(d2b.values){ rows=d2b.values; console.log('[tryFetch APIkey OK]',name,rows.length); } }
+          else { var eb=await r2.json().catch(function(){return{};}); console.warn('[tryFetch APIkey FAIL]',name,r2.status,(eb&&eb.error)?eb.error.message:'no detail'); }
+        } catch(e2){ console.warn('[tryFetch APIkey ERR]',name,e2.message); }
+      }
+    } else {
+      var r3 = await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+C.sheet+'/values/'+encodeURIComponent(name)+'?key='+C.google);
+      if (r3.ok) { var d3=await r3.json(); if(d3.values) rows=d3.values; }
+    }
+    // Cache separately — never let cache errors kill a successful read
+    if (rows) {
+      try { _sheetCache[name]=rows; _cacheTime[name]=Date.now(); updateLastFetched(); }
+      catch(ce) { console.warn('[tryFetch cache err]',name,ce.message); }
+    }
+    return rows;
+  } catch(e) { console.warn('[tryFetch outer err]',name,e.message); return null; }
+}
+
+async function readSheet(name) {
+  var names = TAB_ALIASES[name] || [name], rows = null;
+  for (var i=0; i<names.length; i++) { rows = await tryFetch(names[i]); if (rows) break; }
+  if (!rows) {
+    // Give a helpful message depending on likely cause
+    var isHosted = window.location.protocol==='https:'||window.location.hostname==='localhost';
+    if (isHosted) {
+      console.error('[readSheet FAIL]',name,'— tried aliases:',names);
+      throw new Error('Could not read "'+name+'" — tab not found or proxy error. Check browser Console (F12) for details. Ensure sheet is shared with bnb-it-sheets@blissful-racer-490505-d2.iam.gserviceaccount.com as Editor.');
+    } else {
+      throw new Error('Could not read "'+name+'" — make sure the Google Sheet is shared publicly as Viewer (or add your SA key to Netlify env vars).');
+    }
+  }
+  var hi=0;
+  for (var j=0;j<Math.min(rows.length,5);j++) {
+    if (rows[j].filter(function(c){return c&&c.toString().trim();}).length>=3){hi=j;break;}
+  }
+  var hdrs=rows[hi];
+  return rows.slice(hi+1).map(function(r){
+    var o={}; hdrs.forEach(function(h,k){if(h&&h.toString().trim()) o[h.toString().trim()]=(r[k]||'').toString().trim();}); return o;
+  }).filter(function(r){return Object.values(r).some(function(v){return v&&v.trim();});});
+}
+
+async function appendRow(name, data) {
+  var names = TAB_ALIASES[name] || [name];
+  names.forEach(function(n){ _sheetCache[n]=null; _cacheTime[n]=0; });
+  var isHosted = window.location.protocol==='https:'||window.location.hostname==='localhost';
+  if (isHosted) {
+    return await sheetsProxy('append', {sheet:names[0], row:data});
+  }
+  var url='https://sheets.googleapis.com/v4/spreadsheets/'+C.sheet+'/values/'+encodeURIComponent(names[0])+':append?valueInputOption=USER_ENTERED&key='+C.google;
+  var res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({values:[data]})});
+  if(!res.ok){var e=await res.json().catch(function(){return{};});throw new Error('Sheets append error: '+((e.error&&e.error.message)||res.status));}
+}
+
+async function processMessage(userMsg) {
+  var histCtx = conversationHistory.slice(-6).map(function(m){return m.role+': '+m.text;}).join('\n');
+
+  var intentSys = [
+    'You are an IT asset management assistant for Bennet & Bernard.',
+    'Return ONLY valid JSON. No markdown.',
+    'Sheets: "IT Asset Inventory"(Asset_ID,Device_Type,Brand,Model,Serial_No,Assigned_User,Department,Location,Status), "Accessories"(Item_ID,Item_Type,Assigned_User,Department,Status,Remarks), "Spare Inventory"(Item_ID,Device_Type,Brand,Model,Qty,Condition,Notes), "Network Devices"(Device_ID,Device_Type,Brand,Model,Location,Camera_Count,Status), "Antivirus Tracker"(AV_ID,AV_Brand,User,Department,Next_Due,Status), "Maintenance Log"(Ticket_ID,Site,Category,Issue_Description,Month,Status), "Purchase Assets"(Purchase_ID,Asset_ID,Device_Type,Brand,Model,Vendor_Name,Invoice_No,Invoice_Date,Purchase_Cost,Payment_Status,Warranty_Expiry), "Software Inventory"(SW_ID,Software_Name,Version,Category,License_Type,Vendor,Total_Licenses,Used_Licenses,Expiry_Date,Status), "AMC & Warranty"(AMC_ID,Asset_ID,Device_Type,Brand,Model,Location,Contract_Type,Vendor_Name,Start_Date,End_Date,Annual_Cost,Status), "IT Helpdesk"(Request_ID,Date_Raised,Raised_By,Department,Category,Priority,Description,Asset_ID,Assigned_To,Date_Resolved,Status)',
+    'Intents: search(sheet,filters), count(sheet,group_by), pending_maintenance, spare, antivirus(expiry_filter:bool), add_ticket(issue,site), report, management_query, maintenance_compare',
+    'EXAMPLES (follow these exactly):',
+    '"show Dell devices" -> {"intent":"search","sheet":"IT Asset Inventory","filters":{"Brand":"Dell"}}',
+    '"show laptops" -> {"intent":"search","sheet":"IT Asset Inventory","filters":{"Device_Type":"Laptop"}}',
+    '"show mobiles" -> {"intent":"search","sheet":"IT Asset Inventory","filters":{"Device_Type":"Mobile"}}',
+    '"Tudor Office devices" -> {"intent":"search","sheet":"IT Asset Inventory","filters":{"Location":"Tudor"}}',
+    '"antivirus expiring" -> {"intent":"antivirus","expiry_filter":true}',
+    '"show antivirus" -> {"intent":"antivirus","expiry_filter":false}',
+    '"show AV licenses" -> {"intent":"antivirus","expiry_filter":false}',
+    '"pendrives" -> {"intent":"search","sheet":"Accessories","filters":{"Item_Type":"Pendrive"}}',
+    '"laptop stands" -> {"intent":"search","sheet":"Accessories","filters":{"Item_Type":"Laptop Stand"}}',
+    '"open tickets" -> {"intent":"pending_maintenance"}',
+    '"spare devices" -> {"intent":"spare"}',
+    '"faulty network" -> {"intent":"search","sheet":"Network Devices","filters":{"Status":"Faulty"}}',
+    '"DVR devices" -> {"intent":"search","sheet":"Network Devices","filters":{"Device_Type":"DVR"}}',
+    '"count by department" -> {"intent":"count","sheet":"IT Asset Inventory","group_by":"Department"}',
+    '"full report" -> {"intent":"report"}',
+    '"jan vs feb" -> {"intent":"maintenance_compare"}',
+    '"why cameras down" -> {"intent":"management_query"}',
+    '"show purchased laptops" -> {"intent":"search","sheet":"Purchase Register","filters":{"Category":"Laptop"}}',
+    '"device repairs" -> {"intent":"search","sheet":"Device Repairs","filters":{}}',
+    '"software subscriptions" -> {"intent":"search","sheet":"Software Subscriptions","filters":{}}',
+    '"digital assets" -> {"intent":"search","sheet":"Digital Assets","filters":{}}',
+    '"camera equipment" -> {"intent":"search","sheet":"Digital Assets","filters":{"Device_Type":"Camera Lens"}}',
+    'purchase/bought/procured queries -> Purchase Register sheet',
+    'repair/repaired/fixed device queries -> Device Repairs sheet',
+    'software/license/subscription queries -> Software Subscriptions sheet',
+    'camera/drone/digital equipment queries -> Digital Assets sheet',
+        'RULES: Only use management_query for genuine why/how/policy questions. For any data lookup use search/antivirus/spare/count/report.',
+    '"purchase/vendor/invoice/cost/warranty" -> {"intent":"search","sheet":"Purchase Assets","filters":{}}',
+    '"software/license/subscription/Tally/Adobe/Greythr/Sophos" -> {"intent":"search","sheet":"Software Subscriptions","filters":{}}',
+    '"AMC/annual maintenance/contract/warranty expiry" -> {"intent":"search","sheet":"AMC & Warranty","filters":{}}',
+    '"helpdesk/IT request/support ticket/raised by" -> {"intent":"search","sheet":"IT Helpdesk","filters":{}}',
+    '"open helpdesk/pending requests/unresolved" -> {"intent":"search","sheet":"IT Helpdesk","filters":{"Status":"Open"}}',
+    'Context: ' + (histCtx||'None')
+  ].join('\n');
+
+  var intentRaw = await callClaude(intentSys, userMsg, 120);
+  var intent;
+  try { intent = JSON.parse(intentRaw.replace(/```json|```/g,'').trim()); }
+  catch(e) { intent = {intent:'management_query'}; }
+
+  var sheetData = [];
+
+  if (intent.intent === 'search') {
+    var rows = await readSheet(intent.sheet||'IT Asset Inventory');
+    if (intent.filters && Object.keys(intent.filters).length) {
+      rows = rows.filter(function(r){ return Object.entries(intent.filters).every(function(e){ return (r[e[0]]||'').toLowerCase().includes(e[1].toLowerCase()); }); });
+    }
+    sheetData = rows;
+
+  } else if (intent.intent === 'count') {
+    var all = await readSheet(intent.sheet||'IT Asset Inventory');
+    var gb = intent.group_by||'Device_Type', counts = {};
+    all.forEach(function(r){ var k=r[gb]||'Unknown'; counts[k]=(counts[k]||0)+1; });
+    var sorted = Object.entries(counts).sort(function(a,b){return b[1]-a[1];});
+    return { intent:'count', reply:'Count by '+gb+':\n\n'+sorted.map(function(e){return e[0]+': '+e[1];}).join('\n')+'\n\nTotal: '+all.length+' items',
+      suggestions:['Show all by location','Count by department','Generate full report'], sheetData:null };
+
+  } else if (intent.intent === 'pending_maintenance') {
+    var tix = await readSheet('Maintenance Log').catch(function(){return[];});
+    sheetData = tix.filter(function(r){
+      var s=(r.Overall_Status||r.Status||'').toLowerCase();
+      return s.includes('open')||s.includes('need maintenance')||s.includes('in progress');
+    });
+
+  } else if (intent.intent === 'spare') {
+    sheetData = await readSheet('Spare Inventory').catch(function(){return[];});
+
+  } else if (intent.intent === 'antivirus') {
+    var avR = await readSheet('Antivirus Tracker').catch(function(){return[];});
+    avR = avR.filter(function(r){return r.User||r.AV_ID;});
+    if (intent.expiry_filter || userMsg.toLowerCase().match(/expir|soon|due|upcoming/)) {
+      var td = new Date();
+      avR = avR.filter(function(r){ var d=new Date(r.Next_Due); return !isNaN(d)&&d>td; });
+      avR.sort(function(a,b){return new Date(a.Next_Due)-new Date(b.Next_Due);});
+    }
+    sheetData = avR.slice(0,25);
+
+  } else if (intent.intent === 'add_ticket') {
+    var now=new Date();
+    var monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
+    var monthStr=monthNames[now.getMonth()]+' '+now.getFullYear();
+    var tid='MNT-'+now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+'-'+Math.floor(Math.random()*900+100);
+    var newRow=[tid,monthStr,now.getFullYear().toString(),intent.category||'Custom Homes',intent.site||'','','','',
+      intent.device_type==='CCTV'?'Not working':'','','','',intent.issue||'','No','No','Open',currentUser?currentUser.name:'IT Team',intent.notes||'Added via IT Asset Bot'];
+    try {
+      await appendRow('Maintenance Log', newRow);
+      auditLog('ADD_MAINTENANCE','Maintenance Log', tid,
+        'Site: '+(intent.site||'—')+' | Issue: '+(intent.issue||'—'), 'chat');
+    } catch(e) {}
+    return { intent:'add_ticket', reply:'Maintenance entry added.\n\nID: '+tid+'\nSite: '+(intent.site||'—')+'\nMonth: '+monthStr+'\nIssue: '+(intent.issue||'—')+'\nStatus: Open\nAdded by: '+(currentUser?currentUser.name:'IT Team'), suggestions:['Show all open issues','Show '+monthStr+' maintenance','View full maintenance log'], sheetData:null };
+
+  } else if (intent.intent === 'add_asset') {
+    var aid='NEW-'+Date.now().toString().slice(-6);
+    var assetRow=[aid,intent.device_type||'',intent.brand||'',intent.model||'',intent.serial||'',
+      intent.user||'',intent.department||'',intent.location||'',intent.status||'Working',
+      new Date().toISOString().substring(0,10),'Added via IT Asset Bot by '+(currentUser?currentUser.name:'IT Team')];
+    try {
+      await appendRow('IT Asset Inventory', assetRow);
+      auditLog('ADD_ASSET','IT Asset Inventory', aid,
+        (intent.device_type||'Device')+' — '+(intent.brand||'')+ ' '+(intent.model||'')+' → '+(intent.user||'Unassigned'), 'chat');
+    } catch(e) {}
+    return { intent:'add_asset', reply:'Asset added to IT Asset Inventory.\n\nID: '+aid+'\nDevice: '+(intent.device_type||'—')+' — '+(intent.brand||'')+ ' '+(intent.model||'')+'\nAssigned to: '+(intent.user||'—')+'\nLocation: '+(intent.location||'—')+'\nAdded by: '+(currentUser?currentUser.name:'IT Team'), suggestions:['Show all assets','View '+( intent.device_type||'devices')], sheetData:null };
+
+  } else if (intent.intent === 'it_request') {
+    // Manager raising a query/request — always creates a tracked ticket
+    var reqId2  = 'REQ-'+Date.now().toString().slice(-6);
+    var ticketId = 'MNT-REQ-'+reqId2;
+    var now4    = new Date();
+    var mn4     = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    var dateStr = (now4.getDate()<10?'0':'')+now4.getDate()+'/'+(now4.getMonth()<9?'0':'')+(now4.getMonth()+1)+'/'+now4.getFullYear();
+    var timeStr = (now4.getHours()<10?'0':'')+now4.getHours()+':'+(now4.getMinutes()<10?'0':'')+now4.getMinutes();
+    // Build row matching Maintenance Log column structure exactly:
+    // Entry_ID | Month | Year | Site_Category | Site | Desktops | Laptops | System_Monitor |
+    // CCTV | Network_Devices | Printer | UPS | VDP_Telephone | Antivirus |
+    // Issues_Troubleshooting | Devices_Repaired | Devices_Added | Overall_Status | Technician | Notes
+    var ml4 = [
+      ticketId,
+      mn4[now4.getMonth()]+' '+now4.getFullYear(),
+      now4.getFullYear().toString(),
+      'Management Query',
+      'All Sites',
+      '—','—','—','—','—','—','—','—','—',
+      '[QUERY] '+(currentUser?currentUser.name:'Manager')+': '+userMsg,
+      'No','No',
+      'Pending IT Response',
+      currentUser?currentUser.name:'Manager',
+      'Raised on '+dateStr+' at '+timeStr+' via IT Assistant chatbot'
+    ];
+    var ticketWritten = false;
+    try {
+      await appendRow('Maintenance Log', ml4);
+      ticketWritten = true;
+      auditLog('IT_REQUEST','Maintenance Log', ticketId,
+        'From '+(currentUser?currentUser.name:'Manager')+': '+userMsg.substring(0,120), 'chat');
+      // Invalidate cache so IT dashboard sees new ticket immediately
+      var aliases = TAB_ALIASES['Maintenance Log'] || ['Maintenance Log'];
+      aliases.forEach(function(a){ _sheetCache[a]=null; _cacheTime[a]=0; });
+    } catch(e) { console.error('[IT_REQUEST] appendRow failed:',e.message); }
+    return { intent:'it_request',
+      reply:(ticketWritten
+        ? '\u2713 Your query has been logged as a ticket for the IT team.\n\nTicket ID: '+ticketId+'\nRaised by: '+(currentUser?currentUser.name:'—')+'\nDate/Time: '+dateStr+' '+timeStr+'\nQuery: '+userMsg+'\n\nDeeptesh and Rajat have been notified and will respond shortly.'
+        : 'Your query was noted but could not be saved to the sheet right now (connection issue). Please try again or contact Deeptesh/Rajat directly.\n\nQuery: '+userMsg),
+      suggestions:['Show my pending queries','Show open IT issues'], sheetData:null };
+
+  } else if (intent.intent === 'maintenance_compare') {
+    var allT=await readSheet('Maintenance Log').catch(function(){return[];});
+    var janT=allT.filter(function(r){return (r.Month||'').includes('January');}),
+        febT=allT.filter(function(r){return (r.Month||'').includes('February');});
+    var janO=janT.filter(function(r){var s=(r.Overall_Status||r.Status||'').toLowerCase();return s.includes('open')||s.includes('need maintenance');}),
+        febO=febT.filter(function(r){var s=(r.Overall_Status||r.Status||'').toLowerCase();return s.includes('open')||s.includes('need maintenance');});
+    sheetData=[{jan_total:janT.length,jan_open:janO.length,feb_total:febT.length,feb_open:febO.length,
+      recurring:febO.filter(function(r){return janO.some(function(j){return j.Site===r.Site&&j.Category===r.Category;});}).map(function(r){return r.Site+' - '+r.Category+': '+r.Issue_Description;}),
+      resolved:janO.filter(function(r){return !febO.some(function(f){return f.Site===r.Site&&f.Category===r.Category;});}).map(function(r){return r.Site+' - '+r.Category;}),
+      feb_open_list:febO}];
+
+  } else if (intent.intent === 'report') {
+    var rr=await Promise.all([readSheet('IT Asset Inventory').catch(function(){return[];}),readSheet('Maintenance Log').catch(function(){return[];}),readSheet('Spare Inventory').catch(function(){return[];}),readSheet('Network Devices').catch(function(){return[];}),readSheet('Antivirus Tracker').catch(function(){return[];})  ]);
+    var ast=rr[0],tix=rr[1],sp=rr[2],net=rr[3],av=rr[4],byType={};
+    ast.forEach(function(r){var k=r.Device_Type||'Unknown';byType[k]=(byType[k]||0)+1;});
+    sheetData=[{total_assets:ast.length,working:ast.filter(function(r){return (r.Status||'').toLowerCase()==='working';}).length,faulty:ast.filter(function(r){return (r.Status||'').toLowerCase()==='faulty';}).length,spare:ast.filter(function(r){return (r.Status||'').toLowerCase()==='spare';}).length,open_tickets:tix.filter(function(r){var s=(r.Overall_Status||r.Status||'').toLowerCase();return s.includes('open')||s.includes('need maintenance');}).length,spare_items:sp.length,network_devices:net.length,faulty_network:net.filter(function(r){var s=(r.Status||'').toLowerCase();return s==='faulty'||s==='not working';}).length,av_expired:av.filter(function(r){return (r.Status||'').toLowerCase()==='expired';}).length,by_device_type:byType,open_sites:tix.filter(function(r){var s=(r.Overall_Status||r.Status||'').toLowerCase();return s.includes('open')||s.includes('need maintenance');}).map(function(r){return r.Site+' - '+(r.Issues_Troubleshooting||r.Category||'');}).slice(0,8)}];
+
+  } else {
+    var mg=await Promise.all([readSheet('Maintenance Log').catch(function(){return[];}),readSheet('Network Devices').catch(function(){return[];})]);
+    sheetData=[{open_issues:mg[0].filter(function(r){var s=(r.Overall_Status||r.Status||'').toLowerCase();return s.includes('open')||s.includes('need maintenance')||s.includes('in progress');}),faulty_devices:mg[1].filter(function(r){var s=(r.Status||'').toLowerCase();return s==='faulty'||s==='not working'||s==='faulty';})}];
+    // If manager, also log this as a ticket so IT is always notified
+    if (currentUser && currentUser.role === 'manager') {
+      var mReqId  = 'REQ-'+Date.now().toString().slice(-6);
+      var mTicket = 'MNT-REQ-'+mReqId;
+      var mNow    = new Date();
+      var mMn     = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      var mDate   = (mNow.getDate()<10?'0':'')+mNow.getDate()+'/'+(mNow.getMonth()<9?'0':'')+(mNow.getMonth()+1)+'/'+mNow.getFullYear();
+      var mTime   = (mNow.getHours()<10?'0':'')+mNow.getHours()+':'+(mNow.getMinutes()<10?'0':'')+mNow.getMinutes();
+      var mRow    = [mTicket,mMn[mNow.getMonth()]+' '+mNow.getFullYear(),mNow.getFullYear().toString(),
+        'Management Query','All Sites','—','—','—','—','—','—','—','—','—',
+        '[QUERY] '+currentUser.name+': '+userMsg,'No','No','Pending IT Response',
+        currentUser.name,'Raised on '+mDate+' at '+mTime+' via IT Assistant chatbot'];
+      appendRow('Maintenance Log', mRow).then(function(){
+        var aliases = TAB_ALIASES['Maintenance Log']||['Maintenance Log'];
+        aliases.forEach(function(a){ _sheetCache[a]=null; _cacheTime[a]=0; });
+        auditLog('IT_REQUEST','Maintenance Log',mTicket,'From '+currentUser.name+': '+userMsg.substring(0,120),'chat');
+      }).catch(function(e){ console.warn('[mgmt_query ticket]',e.message); });
+    }
+  }
+
+  var recentCtx = conversationHistory.slice(-4).map(function(m){return (m.role==='user'?'User: ':'AI: ')+m.text.substring(0,120);}).join('\n');
+  var fmtSys = [
+    'You are an intelligent IT Asset Management Assistant for Bennet & Bernard.',
+    'Current user: '+(currentUser?currentUser.name+' ('+currentUser.role+')':'Unknown'),
+    'CONTEXT: Sites: B&B Campal(main office), Tudor House/Assagao, BVA/BVG Assagao, Black Vanilla Campal/Assagao, Belair Villa, Lakeshire Corlim, CDM, QDM, Northquay, Casa Braga.',
+    'Management: Fabiola Maam(Director), Varun Sir(Operations Lead). IT Team: Deeptesh & Rajat.',
+    'KNOWN ISSUES: Lakeshire/Sevens CCTV on hold per Varun sir since Jan 2026. El Toledo cameras: LAN cable fault recurring Feb 2026. CDS Moira UPS faulty. Tudor House DVR: all 8 cameras not working, hold per Varun sir.',
+    'INVENTORY SUMMARY: ~168 assets tracked. Laptops: 15, Mobiles: 22, Desktops: 4, Printers: 8, UPS: 25+, DVR/NVR: 19, Network switches: 15+. Sites: 15 active.',
+    'SOFTWARE SUBSCRIPTIONS: 12 active subscriptions tracked. Key: Google Workspace (53 users), Sophos firewall, Greythr HR (50 users), Checkpoint Email Security (110 users), Bitdefender antivirus (15 users), Adobe Creative Cloud, AutoCAD LT, Tally Prime, Follow-up Boss CRM, Smart Office (50 users). Total annual spend tracked in Software Subscriptions tab.',
+    recentCtx ? 'RECENT CONVERSATION:\n'+recentCtx : '',
+    'FORMAT: Be concise. NO markdown — no ** or ## or *. Plain text only. Numbered lists for multiple items. Under 300 words.',
+    'End with: SUGGESTIONS: [question 1] | [question 2] | [question 3]'
+  ].filter(Boolean).join('\n');
+
+  var reply = await callClaude(fmtSys, 'Query: '+userMsg+'\nData: '+JSON.stringify(sheetData.slice(0,40)), 650);
+
+  var suggestions = [], sugMatch = reply.match(/SUGGESTIONS:\s*(.+)/);
+  if (sugMatch) {
+    suggestions = sugMatch[1].split('|').map(function(s){return s.trim().replace(/[\[\]]/g,'');}).filter(Boolean).slice(0,3);
+    reply = reply.replace(/SUGGESTIONS:.+/,'').trim();
+  }
+  return { intent: intent.intent, reply: reply, suggestions: suggestions, sheetData: sheetData };
+}
+
+function rmEmpty(){ var e=document.getElementById('emptyState'); if(e)e.remove(); }
+function sysMsg(t){ rmEmpty(); var el=document.createElement('div'); el.className='msg sys'; el.innerHTML='<div class="bbl">'+esc(t)+'</div>'; document.getElementById('chatBox').appendChild(el); scrollChat(); }
+function userMsg(t){ rmEmpty(); var now=new Date(); var ts=now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes(); var el=document.createElement('div'); el.className='msg user'; el.innerHTML='<div class="bbl">'+esc(t)+'<div class="msg-time" style="color:rgba(255,255,255,.6)">'+ts+'</div></div><div class="av u">'+(currentUser?currentUser.name.substring(0,2).toUpperCase():'IT')+'</div>'; document.getElementById('chatBox').appendChild(el); scrollChat(); }
+function cleanMd(t) {
+  return t.replace(/\*\*([^*]+)\*\*/g,'$1').replace(/\*([^*]+)\*/g,'$1')
+    .replace(/^#{1,3}\s+/gm,'').replace(/^>\s*/gm,'').replace(/_{2}([^_]+)_{2}/g,'$1').trim();
+}
+
+// ── Rich UI renderers ────────────────────────────────────────────────────
+function statusBadge(s) {
+  var sl=(s||'').toLowerCase();
+  var cls=sl==='working'?'sw':sl==='spare'?'ss':sl==='faulty'||sl==='not working'?'sf':sl==='open'||sl==='need maintenance'?'sf':sl==='resolved'||sl==='all good'?'sw':sl==='in progress'?'sp':'ss';
+  return '<span class="rb '+cls+'">'+esc(s||'—')+'</span>';
+}
+
+function renderCards(rows, intent) {
+  if (!rows||!rows.length) return '<p style="color:var(--txt3);font-size:13px;">No matching records found.</p>';
+  var limit = Math.min(rows.length, 24);
+  var html = '<div class="rc-grid">';
+  for (var i=0;i<limit;i++) {
+    var r=rows[i];
+    var id   = r.Asset_ID||r.Item_ID||r.Device_ID||r.AV_ID||'—';
+    var type = r.Device_Type||r.Item_Type||r.AV_Brand||'Device';
+    var name = r.Brand&&r.Model ? r.Brand+' '+r.Model : r.Brand||r.Model||r['Make and Model']||r.Phone||'—';
+    var user = r.Assigned_User||r.User||r.Users||'—';
+    var loc  = r.Location||'—';
+    var dept = r.Department||'—';
+    var stat = r.Status||r.Condition||'';
+    html += '<div class="rc-card">'
+      +'<div class="rc-top"><span class="rc-id">'+esc(id)+'</span>'+statusBadge(stat)+'</div>'
+      +'<div class="rc-name">'+esc(name)+'</div>'
+      +'<div class="rc-sub">'+esc(type)+(user!=='—'?' · '+esc(user):'')+'</div>'
+      +'<div class="rc-tags"><span class="rc-tag">'+esc(dept)+'</span><span class="rc-tag">'+esc(loc)+'</span></div>'
+      +'</div>';
+  }
+  html += '</div>';
+  if (rows.length>limit) html += '<p style="font-size:11px;color:var(--txt3);margin-top:8px;">Showing '+limit+' of '+rows.length+' records.</p>';
+  return html;
+}
+
+function renderTable(rows) {
+  if (!rows||!rows.length) return '<p style="color:var(--txt3);font-size:13px;">No matching records found.</p>';
+  var keys=Object.keys(rows[0]).filter(function(k){return k&&rows.some(function(r){return r[k]&&r[k].trim();});}).slice(0,7);
+  var limit=Math.min(rows.length,30);
+  var html='<div class="rt-wrap"><table class="rt"><thead><tr>'+keys.map(function(k){return '<th>'+esc(k.replace(/_/g,' '))+'</th>';}).join('')+'</tr></thead><tbody>';
+  for(var i=0;i<limit;i++){
+    var r=rows[i];
+    html+='<tr>'+keys.map(function(k){
+      var v=r[k]||'—';
+      if(k==='Status'||k==='Condition') return '<td>'+statusBadge(v)+'</td>';
+      if(k==='Asset_ID'||k==='Item_ID'||k==='Device_ID'||k==='AV_ID'||k==='Ticket_ID') return '<td><span class="rt-mono">'+esc(v)+'</span></td>';
+      return '<td>'+esc(v)+'</td>';
+    }).join('')+'</tr>';
+  }
+  html+='</tbody></table></div>';
+  if(rows.length>limit) html+='<p style="font-size:11px;color:var(--txt3);margin-top:6px;">Showing '+limit+' of '+rows.length+' records.</p>';
+  return html;
+}
+
+function renderTimeline(rows) {
+  if (!rows||!rows.length) return '<p style="color:var(--txt3);font-size:13px;">No open tickets found.</p>';
+  var html='<div class="tl">';
+  rows.slice(0,20).forEach(function(r){
+    var s=(r.Status||'').toLowerCase();
+    var dotCls=s==='open'||s==='need maintenance'?'td-open':s==='in progress'?'td-prog':'td-res';
+    var badgeCls=s==='open'||s==='need maintenance'?'tb-open':s==='in progress'?'tb-prog':'tb-res';
+    html+='<div class="tl-row">'
+      +'<div class="tl-dot '+dotCls+'"></div>'
+      +'<div class="tl-body">'
+      +'<div class="tl-title">'+esc(r.Site||'—')+' — '+esc(r.Category||r.Issue_Description||'—')
+      +' <span class="tl-badge '+badgeCls+'">'+esc(r.Status||'—')+'</span></div>'
+      +'<div class="tl-meta">'+(r.Ticket_ID?esc(r.Ticket_ID)+' · ':'')+(r.Month?esc(r.Month)+' · ':'')+esc(r.Issue_Description||r.Remarks||'')+'</div>'
+      +'</div></div>';
+  });
+  html+='</div>';
+  return html;
+}
+
+function renderDashboard(data) {
+  var d=data[0]||{};
+  var byType=d.by_device_type||{};
+  var sorted=Object.entries(byType).sort(function(a,b){return b[1]-a[1];}).slice(0,6);
+  var maxVal=sorted.length?sorted[0][1]:1;
+  var colors=['#378ADD','#1D9E75','#7F77DD','#EF9F27','#D85A30','#639922'];
+  var html='<div class="dash">'
+    +'<div class="dash-stats">'
+    +'<div class="ds"><div class="ds-val">'+esc(String(d.total_assets||0))+'</div><div class="ds-lbl">Total assets</div></div>'
+    +'<div class="ds"><div class="ds-val" style="color:#3B6D11">'+esc(String(d.working||0))+'</div><div class="ds-lbl">Working</div></div>'
+    +'<div class="ds"><div class="ds-val" style="color:#854F0B">'+esc(String(d.open_tickets||0))+'</div><div class="ds-lbl">Open tickets</div></div>'
+    +'<div class="ds"><div class="ds-val" style="color:#A32D2D">'+esc(String(d.faulty||0))+'</div><div class="ds-lbl">Faulty</div></div>'
+    +'<div class="ds"><div class="ds-val">'+esc(String(d.spare_items||0))+'</div><div class="ds-lbl">Spare items</div></div>'
+    +'<div class="ds"><div class="ds-val" style="color:#A32D2D">'+esc(String(d.av_expired||0))+'</div><div class="ds-lbl">AV expired</div></div>'
+    +'</div>';
+  if (sorted.length) {
+    html+='<div class="dash-bars">';
+    sorted.forEach(function(e,i){
+      var pct=Math.round((e[1]/maxVal)*100);
+      html+='<div class="db-row"><span class="db-lbl">'+esc(e[0])+'</span>'
+        +'<div class="db-track"><div class="db-fill" style="width:'+pct+'%;background:'+colors[i%colors.length]+'">'+e[1]+'</div></div>'
+        +'</div>';
+    });
+    html+='</div>';
+  }
+  if (d.open_sites&&d.open_sites.length) {
+    html+='<div class="dash-issues"><div class="dash-issues-title">Open issues</div>'
+      +d.open_sites.map(function(s){return '<div class="dash-issue-row"><span class="rb sf" style="font-size:9px;">Open</span> '+esc(s)+'</div>';}).join('')
+      +'</div>';
+  }
+  html+='</div>';
+  return html;
+}
+
+function renderCompare(data) {
+  var d=data[0]||{};
+  var html='<div class="cmp">'
+    +'<div class="cmp-months">'
+    +'<div class="cmp-month"><div class="cmp-m-title">January 2026</div><div class="cmp-m-stat">'+esc(String(d.jan_total||0))+'</div><div class="ds-lbl">total sites</div>'
+    +'<div class="cmp-open"><span class="rb sf">'+esc(String(d.jan_open||0))+' open</span></div></div>'
+    +'<div class="cmp-arrow">→</div>'
+    +'<div class="cmp-month"><div class="cmp-m-title">February 2026</div><div class="cmp-m-stat">'+esc(String(d.feb_total||0))+'</div><div class="ds-lbl">total sites</div>'
+    +'<div class="cmp-open"><span class="rb sf">'+esc(String(d.feb_open||0))+' open</span></div></div>'
+    +'</div>';
+  if (d.recurring&&d.recurring.length) {
+    html+='<div class="cmp-section"><div class="cmp-sec-title">🔴 Recurring issues (still open in Feb)</div>'
+      +d.recurring.map(function(r){return '<div class="cmp-row">'+esc(r)+'</div>';}).join('')+'</div>';
+  }
+  if (d.resolved&&d.resolved.length) {
+    html+='<div class="cmp-section"><div class="cmp-sec-title">✓ Resolved in Feb</div>'
+      +d.resolved.map(function(r){return '<div class="cmp-row">'+esc(r)+'</div>';}).join('')+'</div>';
+  }
+  html+='</div>';
+  return html;
+}
+
+function pickRenderer(intent, sheetData, text) {
+  if (!sheetData||!sheetData.length) return null;
+  var d0=sheetData[0];
+  // Dashboard for report
+  if (intent==='report') return renderDashboard(sheetData);
+  // Compare for maintenance_compare
+  if (intent==='maintenance_compare') return renderCompare(sheetData);
+  // Timeline for pending maintenance
+  if (intent==='pending_maintenance') return renderTimeline(sheetData);
+  // Cards for small device searches (<=12 results)
+  if ((intent==='search'||intent==='spare'||intent==='antivirus') && sheetData.length<=12) return renderCards(sheetData, intent);
+  // Table for larger lists
+  if (intent==='search'||intent==='spare'||intent==='antivirus') return renderTable(sheetData);
+  return null;
+}
+
+function botMsg(t, intent, isErr, suggs, sheetData) {
+  var now=new Date(); var ts=now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes();
+  t = isErr ? t : cleanMd(t);
+  var badge=intent&&!isErr?'<div class="badge b-'+intent+'">'+intent.replace(/_/g,' ')+'</div>':'';
+  var sugHtml='';
+  if(suggs&&suggs.length) sugHtml='<div class="suggestions">'+suggs.map(function(s){return '<button class="sug-btn" onclick="qa(\''+s.replace(/'/g,"\\'")+'\')">'+ esc(s)+'</button>';}).join('')+'</div>';
+
+  var richHtml = (!isErr && sheetData) ? pickRenderer(intent, sheetData, t) : null;
+  var content = richHtml
+    ? badge + richHtml + (t&&t.length>20?'<div style="margin-top:10px;font-size:12px;color:var(--txt3);">'+esc(t)+'</div>':'') + sugHtml
+    : badge + esc(t) + sugHtml;
+
+  var el=document.createElement('div'); el.className='msg bot';
+  el.innerHTML='<div class="av b">AI</div><div class="bbl'+(isErr?' err':'')+'">'  +content+'<div class="msg-time">'+ts+'</div></div>';
+  document.getElementById('chatBox').appendChild(el); scrollChat();
+}
+function addTyping(){
+  var el=document.createElement('div'); el.className='msg bot'; el.id='typing';
+  el.innerHTML='<div class="av b">AI</div><div class="bbl"><div class="typing"><span></span><span></span><span></span></div><div id="typingHint" style="font-size:10px;color:var(--txt3);font-family:monospace;margin-top:4px;">reading sheets...</div></div>';
+  document.getElementById('chatBox').appendChild(el); scrollChat();
+  // Update hint after 1s to show AI is processing
+  setTimeout(function(){ var h=document.getElementById('typingHint'); if(h) h.textContent='generating response...'; }, 1200);
+}
+function rmTyping(){ var e=document.getElementById('typing'); if(e)e.remove(); }
+function scrollChat(){ document.getElementById('chatBox').scrollTop=99999; }
+function esc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
+function autoResize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,100)+'px'; }
+
+function updateCharCount(el) {
+  var cc = document.getElementById('charCount');
+  if (!cc) return;
+  var len = el.value.length;
+  cc.textContent = len > 0 ? len+'/500' : '';
+  cc.style.color = len > 450 ? 'var(--dan)' : 'var(--txt3)';
+}
+function handleKey(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();} }
+function qa(t){ document.getElementById('msgInput').value=t; send(); }
+
+async function send() {
+  var input=document.getElementById('msgInput'), txt=input.value.trim();
+  if(!txt||!currentUser) return;
+  input.value=''; input.style.height='auto';
+  document.getElementById('sendBtn').disabled=true;
+  userMsg(txt); conversationHistory.push({role:'user',text:txt}); addTyping();
+  try {
+    var r=await processMessage(txt); rmTyping();
+    botMsg(r.reply,r.intent,false,r.suggestions,r.sheetData);
+    conversationHistory.push({role:'assistant',text:r.reply});
+    if(conversationHistory.length>20) conversationHistory=conversationHistory.slice(-20);
+  } catch(err) { rmTyping(); botMsg(err.message,'error',true,[]); }
+  finally { document.getElementById('sendBtn').disabled=false; input.focus(); }
+}
+
+var _pendingRequests = [];
+
+async function loadAlerts() {
+  try {
+    var r0=readSheet('Antivirus Tracker').catch(function(){return[];});
+    var r1=readSheet('Network Devices').catch(function(){return[];});
+    var r2=readSheet('Maintenance Log').catch(function(){return[];});
+    var res=await Promise.all([r0,r1,r2]);
+    var av=res[0],net=res[1],maint=res[2];
+    var today=new Date(),in30=new Date(today.getTime()+30*24*60*60*1000);
+    var expiring=av.filter(function(r){var d=new Date(r.Next_Due);return !isNaN(d)&&d>today&&d<=in30;});
+    var faulty=net.filter(function(r){var s=(r.Status||'').toLowerCase();return s==='faulty'||s==='not working';});
+    _pendingRequests=maint.filter(function(r){
+      var s=(r.Overall_Status||r.Status||'').toLowerCase();
+      var isReq = (r.Entry_ID&&r.Entry_ID.includes('REQ')) ||
+                  (r.Site_Category&&r.Site_Category.includes('Management Query')) ||
+                  (r.Issues_Troubleshooting&&r.Issues_Troubleshooting.startsWith('[QUERY]'));
+      return isReq && !s.includes('resolved');
+    });
+    var bar=document.getElementById('alertsBar'),chips=[];
+    if(expiring.length) chips.push('<div class="alert-chip warn" onclick="showAVExpiry()">&#9888; '+expiring.length+' AV expiring</div>');
+    if(faulty.length)   chips.push('<div class="alert-chip danger" onclick="showFaulty()">&#128308; '+faulty.length+' faulty devices</div>');
+    if(_pendingRequests.length&&can('canWrite')) chips.push('<div class="alert-chip warn" onclick="toggleDash()">&#128172; '+_pendingRequests.length+' management quer'+(_pendingRequests.length>1?'ies':'y')+'</div>');
+    if(chips.length){bar.innerHTML=chips.join('');bar.style.display='flex';}
+    var dc=document.getElementById('dashChip');
+    if(dc&&_pendingRequests.length&&can('canWrite')){dc.className='dash-chip show';dc.innerHTML='<span class="pulse"></span>'+_pendingRequests.length+' queries';}
+    var fab=document.getElementById('fabStack');
+    if(fab) fab.className=can('canWrite')?'fab-stack show':'fab-stack';
+  } catch(e){console.log('Alert err:',e);}
+}
+
+function showAVExpiry(){qa('Show antivirus expiring soon');}
+function showFaulty(){qa('Show faulty network devices');}
+
+var _dashRefreshTimer = null;
+function toggleDash(){
+  var p=document.getElementById('dashPanel');
+  if(!p) return;
+  p.classList.toggle('open');
+  if(p.classList.contains('open')){
+    buildDash();
+    // Auto-refresh every 60s while dashboard is open
+    _dashRefreshTimer = setInterval(function(){
+      if(document.getElementById('dashPanel').classList.contains('open')){
+        loadAlerts().then(buildDash);
+      } else {
+        clearInterval(_dashRefreshTimer);
+      }
+    }, 60000);
+  } else {
+    if(_dashRefreshTimer){ clearInterval(_dashRefreshTimer); _dashRefreshTimer=null; }
+  }
+}
+
+function buildDash(){
+  var p=document.getElementById('dashPanel');
+  if(!p) return;
+  if(!_pendingRequests.length){
+    p.innerHTML='<div class="dash-inner"><div style="font-size:12px;color:var(--txt3);padding:4px 0">No pending queries from management.</div></div>';
+    return;
+  }
+  var h='<div class="dash-inner"><div class="dash-title">Management queries <span class="notif-count">'+_pendingRequests.length+'</span></div>';
+  _pendingRequests.forEach(function(r,i){
+    var done=(r.Overall_Status||'').toLowerCase().includes('resolved');
+    var queryText = (r.Issues_Troubleshooting||r.Notes||'').replace(/^\[QUERY\]\s*/,'').replace(/^Manager Query:\s*/i,'');
+    var raisedBy   = r.Technician || 'Management';
+    var ticketId   = r.Entry_ID || '';
+    h+='<div class="req-card '+(done?'done':'')+'" id="rc'+i+'">'
+      +'<div class="req-row1"><span class="req-who">'+esc(raisedBy)+'</span><span class="req-when">'+esc(r.Month||'')+'</span></div>'
+      +(ticketId?'<div style="font-size:9px;font-family:monospace;color:var(--txt3);margin-bottom:4px">'+esc(ticketId)+'</div>':'')
+      +'<div class="req-text">'+esc(queryText||'No details')+'</div>'
+      +'<div class="req-btns">';
+    if(!done){
+      h+='<button class="rbtn blue" onclick="openReply('+i+')">Reply</button>';
+      h+='<button class="rbtn green" onclick="markDone(this.dataset.id,'+i+')" data-id="'+r.Entry_ID+'">Mark resolved</button>';
+    }
+    h+='<button class="rbtn" onclick="askAboutReq('+i+')">Ask AI</button>';
+    h+='</div><div class="reply-area" id="ra'+i+'"><textarea class="reply-ta" id="rt'+i+'" placeholder="Your reply..."></textarea><button class="reply-go" onclick="doReply('+i+')">Send reply</button></div></div>';
+  });
+  h+='</div>';
+  p.innerHTML=h;
+}
+
+function openReply(i){var ra=document.getElementById('ra'+i);if(ra)ra.classList.toggle('open');}
+function askAboutReq(i){if(_pendingRequests[i]){qa(_pendingRequests[i].Issues_Troubleshooting||_pendingRequests[i].Notes||'');}}
+
+async function doReply(i){
+  var r=_pendingRequests[i],txt=document.getElementById('rt'+i);
+  if(!txt||!txt.value.trim()) return;
+  var reply=txt.value.trim();
+  var now=new Date(),mn=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var row=['MNT-REPLY-'+Date.now().toString().slice(-6),mn[now.getMonth()]+' '+now.getFullYear(),now.getFullYear().toString(),
+    'IT Reply',r.Site||'All Sites','','','','','','','','','',
+    'IT Reply to '+(r.Technician||'Management')+': '+reply,'No','No','Resolved by IT',
+    currentUser?currentUser.name:'IT Team','Reply to '+(r.Entry_ID||'')];
+  try{
+    await appendRow('Maintenance Log',row);
+    auditLog('REPLY_QUERY','Maintenance Log', r.Entry_ID||'—',
+      'Reply to '+(r.Technician||'Management')+': '+reply.substring(0,120), 'dashboard');
+    var ra=document.getElementById('ra'+i);
+    if(ra) ra.innerHTML='<div style="color:var(--acc2);font-size:12px;padding:4px">&#10003; Reply logged in sheet.</div>';
+    await markDone(r.Entry_ID,i,true);
+    sysMsg('Reply sent to '+(r.Technician||'management')+' and logged.');
+  }catch(e){toast('Error: '+e.message,'error',4000);}
+}
+
+async function markDone(entryId,i,silent){
+  try{
+    if(entryId){
+      var rowIdx=await findRowIndex('Maintenance Log','Entry_ID',entryId);
+      if(rowIdx>0){
+        var shName=(TAB_ALIASES['Maintenance Log']||['Maintenance Log'])[0];
+        await sheetsProxy('update',{range:shName+'!R'+rowIdx,values:[['Resolved by '+(currentUser?currentUser.name:'IT Team')]]});
+        auditLog('MARK_RESOLVED','Maintenance Log', entryId,
+          'Marked resolved by '+(currentUser?currentUser.name:'IT Team'), 'dashboard');
+      }
+    }
+    if(_pendingRequests[i]) _pendingRequests[i].Overall_Status='Resolved';
+    if(!silent){buildDash();sysMsg('Request marked resolved.');}
+    var rem=_pendingRequests.filter(function(r){return !(r.Overall_Status||'').includes('Resolved');}).length;
+    var dc=document.getElementById('dashChip');
+    if(dc) dc.innerHTML='<span class="pulse"></span>'+rem+' quer'+(rem!=1?'ies':'y');
+    if(!rem&&dc) dc.className='dash-chip';
+  }catch(e){console.log('markDone err:',e);}
+}
+
+function openForm(type){
+  closeForm('asset'); closeForm('maint');
+  var id=type==='asset'?'qfAsset':'qfMaint';
+  document.getElementById(id).classList.add('open');
+}
+function closeForm(type){
+  var id=type==='asset'?'qfAsset':'qfMaint';
+  var el=document.getElementById(id);
+  if(el) el.classList.remove('open');
+}
+
+async function submitAsset(){
+  var brand=document.getElementById('qa-brand').value.trim();
+  if(!brand){toast('Brand is required','error');return;}
+  var btn=document.getElementById('qa-submit');
+  btn.disabled=true;btn.textContent='Saving...';
+  var aid='NEW-'+Date.now().toString().slice(-6);
+  var row=[aid,document.getElementById('qa-type').value,brand,document.getElementById('qa-model').value,
+    document.getElementById('qa-serial').value,document.getElementById('qa-user').value,
+    document.getElementById('qa-dept').value,document.getElementById('qa-loc').value,
+    document.getElementById('qa-status').value,new Date().toISOString().substring(0,10),
+    'Added by '+(currentUser?currentUser.name:'IT')+' via chatbot'];
+  try{
+    await appendRow('IT Asset Inventory',row);
+    auditLog('ADD_ASSET_FORM','IT Asset Inventory', aid,
+      document.getElementById('qa-type').value+' — '+brand+' → '+document.getElementById('qa-user').value, 'form');
+    btn.textContent='✓ Saved!';btn.style.background='#1D9E75';
+    setTimeout(function(){
+      closeForm('asset');btn.disabled=false;btn.textContent='Add to Sheet';btn.style.background='';
+      ['qa-brand','qa-model','qa-serial','qa-user'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+      sysMsg('Asset added: '+document.getElementById('qa-type').value+' — '+brand);
+    },1500);
+  }catch(e){btn.disabled=false;btn.textContent='Add to Sheet';toast('Error: '+e.message,'error',5000);}
+}
+
+async function submitMaint(){
+  var issue=document.getElementById('qm-issue').value.trim();
+  if(!issue){toast('Issue description required','error');return;}
+  var btn=document.getElementById('qm-submit');
+  btn.disabled=true;btn.textContent='Saving...';
+  var now=new Date(),mn=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var tid='MNT-'+now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+'-'+Math.floor(Math.random()*900+100);
+  var site=document.getElementById('qm-site').value;
+  var row=[tid,mn[now.getMonth()]+' '+now.getFullYear(),now.getFullYear().toString(),
+    document.getElementById('qm-cat').value,site,'NA','NA','NA',
+    document.getElementById('qm-cctv').value,'NA','NA',
+    document.getElementById('qm-ups').value,'NA','NA',
+    issue,'No','No',document.getElementById('qm-status').value,
+    currentUser?currentUser.name:'IT Team','Logged via form'];
+  try{
+    await appendRow('Maintenance Log',row);
+    auditLog('ADD_MAINTENANCE_FORM','Maintenance Log', tid,
+      'Site: '+site+' | '+issue.substring(0,100), 'form');
+    btn.textContent='✓ Logged!';btn.style.background='#1D9E75';
+    setTimeout(function(){
+      closeForm('maint');btn.disabled=false;btn.textContent='Log to Sheet';btn.style.background='';
+      document.getElementById('qm-issue').value='';
+      sysMsg('Maintenance logged: '+site+' — '+issue);
+    },1500);
+  }catch(e){btn.disabled=false;btn.textContent='Log to Sheet';toast('Error: '+e.message,'error',5000);}
+}
+
+
+
+// ── Audit Log ─────────────────────────────────────────────────────────────
+// Every write operation calls this. Appends one row to 'Audit Log' sheet.
+// Fire-and-forget — never blocks the main operation.
+function auditLog(action, targetSheet, rowId, details, source) {
+  try {
+    var now    = new Date();
+    var pad    = function(n){ return n < 10 ? '0'+n : ''+n; };
+    var dateStr = now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate());
+    var timeStr = pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
+    var auditId = 'AUD-'+Date.now().toString().slice(-8);
+    var user    = currentUser ? currentUser.name : 'Unknown';
+    var role    = currentUser ? currentUser.role  : 'unknown';
+    var row = [
+      auditId,          // Audit_ID
+      dateStr,          // Date
+      timeStr,          // Time
+      dateStr+' '+timeStr, // Full_Timestamp
+      user,             // User
+      role,             // Role
+      action,           // Action  (ADD_ASSET | ADD_MAINTENANCE | REPLY_QUERY | MARK_RESOLVED | IT_REQUEST)
+      targetSheet,      // Target_Sheet
+      rowId  || '—',    // Row_ID
+      details|| '—',    // Details
+      source || 'chat'  // Source  (chat | form | dashboard)
+    ];
+    // Fire-and-forget — don't await, don't block
+    appendRow('Audit Log', row).catch(function(){});
+  } catch(e) {
+    // Audit never crashes the main flow
+    console.log('Audit log error (non-fatal):', e.message);
+  }
+}
+
+// ── Toast notification system ────────────────────────────────────────────
+function toast(msg, type, duration) {
+  type = type || 'info'; duration = duration || 3000;
+  var container = document.getElementById('toastContainer');
+  if (!container) { container = document.createElement('div'); container.id='toastContainer'; document.body.appendChild(container); }
+  var el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  container.appendChild(el);
+  requestAnimationFrame(function(){ el.classList.add('show'); });
+  setTimeout(function(){
+    el.classList.remove('show');
+    setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 300);
+  }, duration);
+}
+
+// ── PIN rate limiting ─────────────────────────────────────────────────────
+var _loginAttempts = 0, _loginLocked = false;
+
+// ── Refresh data (force clear cache) ─────────────────────────────────────
+function refreshData() {
+  _sheetCache = {}; _cacheTime = {};
+  toast('Cache cleared — next query fetches fresh data', 'info');
+}
+
+// ── Dark / Light mode toggle ──────────────────────────────────────────────
+var _themeMode = localStorage.getItem('bnb_theme') || 'dark';
+
+function applyTheme(mode) {
+  _themeMode = mode;
+  localStorage.setItem('bnb_theme', mode);
+  document.body.classList.remove('force-light','force-dark');
+  if (mode === 'light') document.body.classList.add('force-light');
+  else document.body.classList.add('force-dark');
+  var btn = document.getElementById('themeBtn');
+  if (btn) btn.innerHTML = mode === 'light' ? '&#9728;' : '&#9790;';  // ☀ or ☾
+  var lbtn = document.getElementById('themeBtnLogin');
+  if (lbtn) lbtn.innerHTML = mode === 'light' ? '&#9728;' : '&#9790;';
+}
+
+function toggleTheme() {
+  applyTheme(_themeMode === 'dark' ? 'light' : 'dark');
+}
+
+// Apply saved theme on init — script is at end of body so document.body exists
+(function(){
+  var saved = localStorage.getItem('bnb_theme') || 'dark';
+  _themeMode = saved;
+  document.documentElement.style.colorScheme = saved;
+  var b = document.body || document.documentElement;
+  if (saved === 'light') b.classList.add('force-light');
+  else b.classList.add('force-dark');
+})();
+
+// ── Keyboard shortcuts ────────────────────────────────────────────────────
+document.addEventListener('keydown', function(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    var inp = document.getElementById('msgInput');
+    if (inp) { inp.focus(); inp.select(); }
+  }
+  if (e.key === 'Escape') {
+    closeForm('asset'); closeForm('maint');
+    var dp = document.getElementById('dashPanel');
+    if (dp && dp.classList.contains('open')) dp.classList.remove('open');
+  }
+});
+
+// ── Copy to clipboard ─────────────────────────────────────────────────────
+function copyText(text, label) {
+  navigator.clipboard.writeText(text).then(function(){
+    toast((label||text) + ' copied', 'success', 1500);
+  }).catch(function(){ toast('Could not copy', 'error', 1500); });
+}
+
+function getEmptyState() {
+  var chips = [
+    ['Show all Dell devices','Dell devices'],
+    ['Show open maintenance tickets','open tickets'],
+    ['Show antivirus expiring soon','AV expiry'],
+    ['Show spare inventory','spare devices'],
+    ['Show all software subscriptions and costs','software costs'],
+    ['Generate full inventory report','full report'],
+    ['Show camera and drone equipment','cameras / drones'],
+    ['Show device repair history','repair history']
+  ];
+  var html = '<div class="empty" id="emptyState">'
+    + '<div class="empty-icon">&#128187;</div>'
+    + '<div class="empty-title">IT Asset Assistant</div>'
+    + '<div style="font-size:12px;color:var(--txt3);margin-bottom:10px">Live from Google Sheets &nbsp;&middot;&nbsp; Ctrl+K to focus</div>'
+    + '<div class="empty-chips">';
+  chips.forEach(function(c) {
+    html += '<span class="empty-chip" onclick="qa(' + JSON.stringify(c[0]) + ')">' + c[1] + '</span>';
+  });
+  html += '</div></div>';
+  return html;
+}
+
+window.doLogin=doLogin; window.doLogout=doLogout; window.loginKeydown=loginKeydown; window.selectUser=selectUser; window.can=can; window.toggleDash=toggleDash; window.openReply=openReply; window.doReply=doReply; window.markDone=markDone; window.openForm=openForm; window.closeForm=closeForm; window.submitAsset=submitAsset; window.submitMaint=submitMaint; window.showAVExpiry=showAVExpiry; window.showFaulty=showFaulty; window.askAboutReq=askAboutReq;
+window.autoResize=autoResize; window.handleKey=handleKey; window.qa=qa; window.send=send; window.refreshData=refreshData; window.copyText=copyText; window.updateCharCount=updateCharCount; window.toggleTheme=toggleTheme;
+document.addEventListener('DOMContentLoaded', function() {
+  applyTheme(localStorage.getItem('bnb_theme') || 'dark');
+  checkLogin();
+});
+</script>
+</body>
+</html>
